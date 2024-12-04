@@ -8,18 +8,22 @@ kubectl get nodes
 crictl ps
 kubectl get pod -A -o wide
 kubeadm token create --print-join-command
-
 kubectl get deploy
 curl -I 10.99.151.245
 kubectl get services
 kubectl get nodes -o wide
 kubectl get pods -o wide
 kubectl get pods --all-namespaces -o wide
-
-
 kubectl describe pod
 kubectl describe nodes node2
-
-
-
 kubectl edit deploy my-nginx
+
+kubectl run nginx --image=nginx
+#the below command will not work as we need to create service in k8s
+kubectl exec nginx -- curl monitoring
+kubectl get pod -o wide
+##this is the ip address of the montiroing pod it will work
+kubectl exec nginx -- curl 192.168.1.2
+#we need to create service so that the dns resolution will work
+kubectl expose pod nginx --port=80
+kubectl exec nginx -- curl monitoring
