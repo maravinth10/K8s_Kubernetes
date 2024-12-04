@@ -1,10 +1,36 @@
-apiVersion: v1 #pod api version is v1
-kind: Pod #we are creating a pod
+apiVersion: v1
+kind: Service
 metadata:
-  name: nginx #using metadata name we will define the pod name
-spec: #specification about your pod
-  containers: #we are creating a contianer 
-  - name: nginx #this is the name of the container
-    image: nginx:1.14.2 #this is the image which is going to run inside your container
-    ports: #this is the port in which yoiur application is running
-    - containerPort: 80
+  name: nginx-expose
+  labels:
+    app: nginx
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 37006
+  selector:
+    app: nginx
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-expose
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
