@@ -8,3 +8,18 @@ kubectl get nodes
 crictl ps
 kubectl get pod -A -o wide
 kubeadm token create --print-join-command
+
+kubectl get deploy
+curl -I 10.99.151.245
+kubectl get services
+kubectl get nodes -o wide
+kubectl get pods -o wide
+kubectl get pods --all-namespaces -o wide
+
+
+kubectl describe pod
+kubectl describe nodes node2
+
+
+
+kubectl edit deploy my-nginx
