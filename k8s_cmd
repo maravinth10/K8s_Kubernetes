@@ -17,6 +17,7 @@ kubectl get pods --all-namespaces -o wide
 kubectl describe pod
 kubectl describe nodes node2
 kubectl edit deploy my-nginx
+kubectl apply -f pod.yaml
 
 kubectl run nginx --image=nginx
 #the below command will not work as we need to create service in k8s
