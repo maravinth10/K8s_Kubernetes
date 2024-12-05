@@ -5,14 +5,16 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 kubectl get nodes
+kubectl get rs
+kubectl get pods -o wide
+kubectl get services
+kubectl get deploy
 crictl ps
+
 kubectl get pod -A -o wide
 kubeadm token create --print-join-command
-kubectl get deploy
 curl -I 10.99.151.245
-kubectl get services
 kubectl get nodes -o wide
-kubectl get pods -o wide
 kubectl get pods --all-namespaces -o wide
 kubectl describe pod
 kubectl describe nodes node2
