@@ -35,6 +35,9 @@ kubectl exec nginx -- curl monitoring
 --Deployment history
 kubectl rollout history deployment nginx-expose
 kubectl rollout history deployment nginx-expose --revision=1
+--Deployment undo
 kubectl rollout undo deployment nginx-expose
+--Deployment undo specific version
+kubectl rollout undo deployment nginx-expose --to-revision=2
 
 
