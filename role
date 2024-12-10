@@ -11,5 +11,5 @@ kubectl -n aravinth-project describe rolebinding
 --checking the access
 kubectl -n aravinth-project auth can-i create pod --as system:serviceaccount:aravinth-project:aravinthsa
 kubectl -n aravinth-project auth can-i create secret --as system:serviceaccount:aravinth-project:aravinthsa
-
+kubectl -n aravinth-project auth can-i delete secret --as system:serviceaccount:aravinth-project:aravinthsa
 
