@@ -1,0 +1,12 @@
+--create name space
+kubectl create ns aravinth-project
+--create service account
+kubectl -n aravinth-project create sa aravinthsa
+--create role with rights 
+kubectl -n aravinth-project create role aravinthrole --verb=create --resource=secret --resource=configmap
+kubectl -n aravinth-project describe role
+--role binding
+kubectl -n aravinth-project create rolebinding aravinthrolebinding --role aravinthrole --serviceaccount aravinth-project:aravinthsa
+kubectl -n aravinth-project describe rolebinding
+
+
