@@ -8,5 +8,8 @@ kubectl -n aravinth-project describe role
 --role binding
 kubectl -n aravinth-project create rolebinding aravinthrolebinding --role aravinthrole --serviceaccount aravinth-project:aravinthsa
 kubectl -n aravinth-project describe rolebinding
+--checking the access
+kubectl -n aravinth-project auth can-i create pod --as system:serviceaccount:aravinth-project:aravinthsa
+kubectl -n aravinth-project auth can-i create secret --as system:serviceaccount:aravinth-project:aravinthsa
 
 
