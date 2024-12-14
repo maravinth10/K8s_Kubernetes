@@ -7,6 +7,10 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 -- get ingress and class name
 kubectl get ingressclass
 kubectl get ingress
+kubectl describe ingress minimal-ingress
+##while applying you get an valdiation error resolve the same using this command
+ kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
+
 #################################
  vi ingress.yml
  ##############################
