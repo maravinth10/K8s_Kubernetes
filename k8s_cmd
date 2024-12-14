@@ -31,6 +31,8 @@ kubectl exec nginx -- curl 192.168.1.2
 #we need to create service so that the dns resolution will work
 kubectl expose pod nginx --port=80
 kubectl exec nginx -- curl monitoring
+--pod log in
+kubectl exec -it cart-nginx -- /bin/bash
 
 --Deployment history
 kubectl rollout history deployment nginx-expose
