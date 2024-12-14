@@ -3,6 +3,38 @@ https://github.com/kubernetes/ingress-nginx/
 --latest version
 https://github.com/kubernetes/ingress-nginx/blob/main/deploy/static/provider/baremetal/deploy.yaml
 --stable version
-https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.6.4/deploy/static/provider/cloud/deploy.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.6.4/deploy/static/provider/cloud/deploy.yaml
+-- get ingress and class name
+kubectl get ingressclass
+kubectl get ingress
+#################################
+ vi ingress.yml
+ ##############################
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx #what the ingress class has been created
+  rules:
+  - http:
+      paths:
+      - path: /cart #this is the path for 
+        pathType: Prefix
+        backend:
+          service:
+            name: cartservice #put proper service name whatever you have created as clusterip
+            port:
+              number: 80
+      - path: /payment
+        pathType: Prefix
+        backend:
+          service:
+            name: paymentservice
+            port:
+              number: 80
+#############################################################################
 
 
