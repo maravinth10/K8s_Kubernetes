@@ -7,5 +7,10 @@ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -node
 kubectl create secret tls secure-ingress --cert=cert.pem --key=key.pem 
 kubectl get ing,secret
 kubectl describe secret secure-ingress
---now edit ingress.yaml file include tls
-
+--now edit ingress_map_secure.yaml file include tls
+kubectl apply -f ingress_map_secure.yaml
+####once saved open the etc host file node machine ip address poitnig to the secure-ingress.com site
+sudo vi /etc/hosts
+4.172.207.88 secure-ingress.com
+curl https://4.172.207.88:32116/1 -kv
+now it should be selfsigned
