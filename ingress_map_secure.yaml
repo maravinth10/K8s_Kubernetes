@@ -1,0 +1,65 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+  - hosts:
+      - secure-ingress.com
+    secretName: secure-ingress
+  ingressClassName: nginx
+  rules:
+  - host: secure-ingress.com
+  - http:
+      paths:
+      - path: /1
+        pathType: Prefix
+        backend:
+          service:
+            name: cartsvc
+            port:
+              number: 80
+      - path: /2
+        pathType: Prefix
+        backend:
+          service:
+            name: paymentsvc
+            port:
+              number: 80
+      - path: /3
+        pathType: Prefix
+        backend:
+          service:
+            name: foodsvc
+            port:
+              number: 80
+      - path: /4
+        pathType: Prefix
+        backend:
+          service:
+            name: seatsvc
+            port:
+              number: 80
+      - path: /5
+        pathType: Prefix
+        backend:
+          service:
+            name: usermgmtsvc
+            port:
+              number: 8080
+      - path: /6
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-expose
+            port:
+              number: 80
+      - path: /7
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-expose2
+            port:
+              number: 80
