@@ -1,0 +1,11 @@
+--to check the certificate ##the below command will show that we have an fake certificate
+curl https://4.172.207.88:32116/1 -kv
+--  ###lets generate the self signed certificate
+###while generating the certificate in the common name put it secure-ingress.com
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+--create secret using pem key
+kubectl create secret tls secure-ingress --cert=cert.pem --key=key.pem 
+kubectl get ing,secret
+kubectl describe secret secure-ingress
+
+
