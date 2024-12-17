@@ -7,5 +7,5 @@ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -node
 kubectl create secret tls secure-ingress --cert=cert.pem --key=key.pem 
 kubectl get ing,secret
 kubectl describe secret secure-ingress
-
+--now edit ingress.yaml file include tls
 
