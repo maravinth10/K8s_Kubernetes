@@ -12,5 +12,6 @@ kubectl apply -f ingress_map_secure.yaml
 ####once saved open the etc host file node machine ip address poitnig to the secure-ingress.com site
 sudo vi /etc/hosts
 4.172.207.88 secure-ingress.com
-curl https://4.172.207.88:32116/1 -kv
+curl -kv https://4.172.207.88:32116/1
+curl -kv https://secure-ingress.com:32116/1
 now it should be selfsigned
