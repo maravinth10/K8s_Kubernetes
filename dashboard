@@ -1,0 +1,8 @@
+https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+--or use below yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+kubectl get pod -A
+kubectl get svc -A
+curl -kv https://10.101.72.243
+curl https://10.101.72.243 --insecure
+kubectl -n kubernetes-dashboard edit svc kubernetes-dashboard
