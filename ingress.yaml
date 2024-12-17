@@ -1,0 +1,61 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx #what the ingress class has been created
+  rules:
+  - http:
+      paths:
+      - path: /cart #this is the path for 
+        pathType: Prefix
+        backend:
+          service:
+            name: cartservice #put proper service name whatever you have created as clusterip
+            port:
+              number: 80
+      - path: /payment
+        pathType: Prefix
+        backend:
+          service:
+            name: paymentservice
+            port:
+              number: 80
+      - path: /3
+        pathType: Prefix
+        backend:
+          service:
+            name: foodsvc
+            port:
+              number: 80
+      - path: /4
+        pathType: Prefix
+        backend:
+          service:
+            name: seatsvc
+            port:
+              number: 80
+      - path: /5
+        pathType: Prefix
+        backend:
+          service:
+            name: usermgmtsvc
+            port:
+              number: 8080
+      - path: /6
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-expose
+            port:
+              number: 80
+      - path: /7
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-expose2
+            port:
+              number: 80
+              
