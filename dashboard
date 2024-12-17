@@ -5,4 +5,48 @@ kubectl get pod -A
 kubectl get svc -A
 curl -kv https://10.101.72.243
 curl https://10.101.72.243 --insecure
+
+kubectl -n kubernetes-dashboard get svc kubernetes-dashboard -o yaml
+--to change the port to node port
 kubectl -n kubernetes-dashboard edit svc kubernetes-dashboard
+#######################################
+ports:
+  - nodePort: 30005
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    k8s-app: kubernetes-dashboard
+  type: NodePort
+#######################################################
+##lets create an service account
+kubectl -n kubernetes-dashboard create sa admin-user
+kubectl -n kubernetes-dashboard describe sa admin-user
+#########################################################
+lets create the role and role binding
+##############################################
+vi role-dashboard.yml
+##############################################
+apiVersion: rbac.authorization.k8s.io/v1
+# This cluster role binding allows anyone in the "manager" group to read secrets in any namespace.
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: admin-user # Name is case sensitive
+  namespace: kubernetes-dashboard
+############################################
+kubectl apply -f role-dashboard.yaml
+############################################
+verify the role and role binding
+kubectl get clusterrolebinding|grep admin
+kubectl get clusterrole|grep admin
+############################################
+#####generate a token
+kubectl -n kubernetes-dashboard create token admin-user
+############################################
