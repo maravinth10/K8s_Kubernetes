@@ -9,36 +9,7 @@ kubectl get ingressclass
 kubectl get ingress
 kubectl describe ingress minimal-ingress
 ##while applying you get an valdiation error resolve the same using this command
- kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
+kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
 
-#################################
- vi ingress.yml
- ##############################
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: minimal-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-spec:
-  ingressClassName: nginx #what the ingress class has been created
-  rules:
-  - http:
-      paths:
-      - path: /cart #this is the path for 
-        pathType: Prefix
-        backend:
-          service:
-            name: cartservice #put proper service name whatever you have created as clusterip
-            port:
-              number: 80
-      - path: /payment
-        pathType: Prefix
-        backend:
-          service:
-            name: paymentservice
-            port:
-              number: 80
-#############################################################################
 
 
