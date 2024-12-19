@@ -7,12 +7,12 @@ metadata:
 spec:
   tls:
   - hosts:
-      - secure-ingress.com
+    - secure-ingress.com
     secretName: secure-ingress
   ingressClassName: nginx
   rules:
   - host: secure-ingress.com
-  - http:
+    http:
       paths:
       - path: /1
         pathType: Prefix
