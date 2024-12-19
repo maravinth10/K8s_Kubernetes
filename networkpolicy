@@ -1,0 +1,157 @@
+##we createa a namespace and inside the namespace we created two pod
+root@k8smaster:~# kubectl create ns project
+namespace/project created
+root@k8smaster:~# kubectl -n project run frontend --image=nginx
+pod/frontend created
+root@k8smaster:~# kubectl -n project run backend --image=nginx
+pod/backend created
+root@k8smaster:~# kubectl -n project expose pod frontend --port 80
+service/frontend exposed
+root@k8smaster:~# kubectl -n project expose pod backend --port 80
+service/backend exposed
+root@k8smaster:~# 
+###lets see frontend and backend can communicate with each other or not
+740  kubectl -n project exec frontend -- curl backend
+  741  kubectl -n project exec backend -- curl frontend
+  ##both the way it is communicating
+  root@k8smaster:~# vi default-deny.yml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: project
+spec:
+  podSelector: {}
+    
+  policyTypes:
+  - Ingress
+  - Egress
+  
+root@k8smaster:~# kubectl apply -f default-deny.yml 
+networkpolicy.networking.k8s.io/default-deny created
+##now frontend to backend communication stopped and backend to frontend also communication is stopped
+root@k8smaster:~# kubectl -n project exec frontend -- curl backend
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0^C
+root@k8smaster:~# kubectl -n project exec backend -- curl frontend
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0^C
+root@k8smaster:~# 
+##once the communicateion is blocked 
+root@k8smaster:~# kubectl -n project describe networkpolicy default-deny
+Name:         default-deny
+Namespace:    project
+Created on:   2024-12-12 13:02:02 +0000 UTC
+Labels:       <none>
+Annotations:  <none>
+Spec:
+  PodSelector:     <none> (Allowing the specific traffic to all pods in this namespace)
+  Allowing ingress traffic:
+    <none> (Selected pods are isolated for ingress connectivity)
+  Allowing egress traffic:
+    <none> (Selected pods are isolated for egress connectivity)
+  Policy Types: Ingress, Egress
+root@k8smaster:~# 
+####lets create an exception where frontend can intiate connection to backend we will do egress routing. 
+vi frontend.yml
+########################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend
+  namespace: project
+spec:
+  podSelector:
+    matchLabels:
+      run: frontend
+  policyTypes:
+  
+  - Egress #this plicy will do connection to the backend
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          run: backend
+####apply this policy
+kubectl apply -f frontend.yml
+###########lets describe the policy
+root@k8smaster:~# kubectl -n project describe  networkpolicy frontend
+Name:         frontend
+Namespace:    project
+Created on:   2024-12-12 13:08:44 +0000 UTC
+Labels:       <none>
+Annotations:  <none>
+Spec:
+  PodSelector:     run=frontend
+  Not affecting ingress traffic
+  Allowing egress traffic:
+    To Port: <any> (traffic allowed to all ports)
+    To:
+      PodSelector: run=backend
+  Policy Types: Egress
+ ##next we will need to create an igress routing where backend should accept the trafic from the frontend
+ root@k8smaster:~# vi backend.yml
+root@k8smaster:~# kubectl apply -f backend.yml 
+networkpolicy.networking.k8s.io/backend created
+root@k8smaster:~# kubectl -n project describe networkpolicy backend
+Name:         backend
+Namespace:    project
+Created on:   2024-12-12 13:12:50 +0000 UTC
+Labels:       <none>
+Annotations:  <none>
+Spec:
+  PodSelector:     run=backend
+  Allowing ingress traffic:
+    To Port: <any> (traffic allowed to all ports)
+    From:
+      PodSelector: run=frontend
+  Not affecting egress traffic
+  Policy Types: Ingress
+root@k8smaster:~# 
+##but now also if we try to do the communcation from frontend to backend it will not work
+root@k8smaster:~# kubectl -n project exec frontend -- curl backend
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0^C
+root@k8smaster:~# kubectl -n project get pod -o wide
+NAME       READY   STATUS    RESTARTS   AGE   IP             NODE       NOMINATED NODE   READINESS GATES
+backend    1/1     Running   0          18m   192.168.2.14   k8snode2   <none>           <none>
+frontend   1/1     Running   0          18m   192.168.1.9    k8snode1   <none>           <none>
+##with the naming convetion it will nto work it will work with the ip address as in the default policy we have blocked everything 
+root@k8smaster:~# kubectl -n project exec frontend -- curl 192.168.2.14
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   615  100   615    0     0   200k      0 --:--:-- --:--:-- --:--:--  300k
+<!DOCTYPE html>
+<html>
+<head>
+###lets modify the default policy and open the dns port
+vi default-deny.yml
+#########################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: project
+spec:
+  podSelector: {}
+
+  policyTypes:
+  - Ingress
+  - Egress
+  egress:
+  - ports:
+    - port: 53
+      protocol: TCP
+    - port: 53
+      protocol: UDP
+###apply the policy
+kubectl apply -f default-deny.yml
+###now check the dns resultion works or not
+oot@k8smaster:~# kubectl -n project exec frontend -- curl backend
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   615  100   615    0     0    97k      0 --:--:-- --:--:-- --:--:--  120k
+<!DOCTYPE html>
