@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: task-pv-claim
+spec:
+  resources:
+    requests:
+      storage: 10Gi
+  volumeMode: Filesystem #this will detect which file system you have in your system
+  accessModes:
+    - ReadWriteOnce
