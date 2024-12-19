@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: mysql
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: mysql:5.6
+        name: mysql
+        env:
+          - name: MYSQL_ROOT_PASSWORD #this password need to be mapped from where secret which we have created earliern
+            valueFrom:
+              secretKeyRef:
+                name: mysql-db-password
+                key: db-password
+        ports:
+        - containerPort: 3306
+        volumeMounts: #this is the path inside your container
+          - name: mysql-persistent-storage
+            mountPath: /var/lib/mysql
+          - name: usermanagement-db-script
+            mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: mysql-persistent-storage #volume mount path name and volume name should match to do the mounting
+          persistentVolumeClaim:
+            claimName:  task-pv-claim
+        - name: usermanagement-db-script
+          configMap:
+            name: userdb-script
