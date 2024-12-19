@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: pod-quota
+  namespace: aravinth #in the metadata we are define the namespace if you dont define this it will be applied to default ns
+spec:
+  hard:
+    pods: "20"
