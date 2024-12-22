@@ -1,0 +1,145 @@
+###to replicate the dynamic volume we will deploy an application which will create teh path for storage class
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.24/deploy/local-path-storage.yaml
+##to verify the same the storage class is created or not
+kubectl get sc
+##########################once you create the storage class 
+root@k8smaster:~# kubectl get sc
+NAME         PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  6s
+root@k8smaster:~# 
+######lets create teh headless service
+root@k8smaster:~# vi postgres-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  ports:
+    - name: postgres
+      port: 5432
+  clusterIP: None #trhis will create the service with dns name
+  selector:
+    app: postgres
+root@k8smaster:~# kubectl apply -f postgres-service.yml 
+service/postgres created
+###once you create the headless service you will see that it dont have the ip address
+root@k8smaster:~# kubectl get svc
+NAME              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+postgres          ClusterIP   None             <none>        5432/TCP         4s
+####lets create the statefulset
+vi state.yml
+#################################
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  labels:
+    app: postgres 
+spec:
+  selector:
+    matchLabels:
+      app: postgres 
+  serviceName: postgres #statefulset always required that you define the headless service
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: postgres 
+    spec:
+      initContainers:
+        - name: postgres-init
+          image: postgres:latest
+          command:
+          - bash
+          - "-c"
+          - |
+            set -ex
+            [[ `hostname` =~ -([0-9]+)$ ]] || exit 1
+            ordinal=${BASH_REMATCH[1]}
+            if [[ $ordinal -eq 0 ]]; then
+              printf "I am the primary"
+            else
+              printf "I am a read-only replica"
+            fi
+      containers:
+      - name: postgres
+        image: postgres
+        env:
+          - name: POSTGRES_USER
+            value: postgres 
+          - name: POSTGRES_PASSWORD
+            value: postgres 
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1 
+                fieldPath: status.podIP 
+        ports:
+        - containerPort: 5432
+          name: web
+        
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates: #this is like pvc it will create
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "local-path" #this is the name of the storage class we have define earlier
+      resources:
+        requests:
+          storage: 1Gi
+###lets apply it
+kubectl apply -f state.yml
+#####to check the statefulset after few min
+###if i look into the pod all the pod are created in orderly fashion
+root@k8smaster:~# kubectl get pod
+NAME         READY   STATUS    RESTARTS      AGE
+dnsutils     1/1     Running   1 (67m ago)   2d22h
+postgres-0   1/1     Running   0             117s
+postgres-1   1/1     Running   0             100s
+postgres-2   1/1     Running   0             83s
+root@k8smaster:~# 
+##lts check the storage against every pod there will be storage
+
+NAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+data-postgres-0   Bound    pvc-668fbeec-793f-49ba-a34b-3a001df08e21   1Gi        RWO            local-path     <unset>                 2m48s
+data-postgres-1   Bound    pvc-b662ec73-7f73-4515-9c11-ccb5e1bf1246   1Gi        RWO            local-path     <unset>                 2m31s
+data-postgres-2   Bound    pvc-1c4f0162-bbf8-4368-83a3-713e0d5ce737   1Gi        RWO            local-path     <unset>                 2m14s
+###lets check the directory
+before check th directory check in which node the contianer is running. if you find one the pod is running on node1 
+root@k8smaster:~# kubectl get pod -o wide
+NAME         READY   STATUS    RESTARTS      AGE     IP             NODE       NOMINATED NODE   READINESS GATES
+dnsutils     1/1     Running   1 (69m ago)   2d22h   192.168.2.5    k8snode2   <none>           <none>
+postgres-0   1/1     Running   0             3m25s   192.168.2.12   k8snode2   <none>           <none>
+postgres-1   1/1     Running   0             3m8s    192.168.1.8    k8snode1   <none>           <none>
+postgres-2   1/1     Running   0             2m51s   192.168.2.14   k8snode2   <none>           <none>
+root@k8smaster:~# 
+####go to this specific directory
+10  cd /opt
+   11  ls
+   12  cd local-path-provisioner/
+   13  ls
+   #####check all the three pod logs 
+   root@k8smaster:~# kubectl logs postgres-0 -c postgres-init
+++ hostname
++ [[ postgres-0 =~ -([0-9]+)$ ]]
++ ordinal=0
++ [[ 0 -eq 0 ]]
++ printf 'I am the primary'
+I am the primaryroot@k8smaster:~# kubectl logs postgres-1 -c postgres-init
+++ hostname
+I am a read-only replica+ [[ postgres-1 =~ -([0-9]+)$ ]]
++ ordinal=1
++ [[ 1 -eq 0 ]]
++ printf 'I am a read-only replica'
+root@k8smaster:~# kubectl logs postgres-2 -c postgres-init
+++ hostname
++ [[ postgres-2 =~ -([0-9]+)$ ]]
++ ordinal=2
++ [[ 2 -eq 0 ]]
++ printf 'I am a read-only replica'
+I am a read-only replicaroot@k8smaster:~# 
