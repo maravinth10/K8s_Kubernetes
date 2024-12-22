@@ -41,5 +41,8 @@ kubectl rollout history deployment nginx-expose --revision=1
 kubectl rollout undo deployment nginx-expose
 --Deployment undo specific version
 kubectl rollout undo deployment nginx-expose --to-revision=2
-
+--restart pods
+kubectl rollout restart deployment grafana
+--replace cmd 
+kubectl get pod grafana-57dc5b9658-d5vpw -o yaml |kubectl replace --force -f -
 
