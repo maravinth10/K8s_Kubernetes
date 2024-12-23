@@ -12,6 +12,8 @@ kubectl get services
 kubectl get deploy
 crictl ps
 
+kubectl logs -f food-nginx
+
 kubectl get pod -A -o wide
 kubeadm token create --print-join-command
 curl -I 10.99.151.245
