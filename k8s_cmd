@@ -48,3 +48,16 @@ kubectl rollout restart deployment grafana
 --replace cmd 
 kubectl get pod grafana-57dc5b9658-d5vpw -o yaml |kubectl replace --force -f -
 
+
+kubectl run monitoring --image=nginx
+kubectl expose pod nginx --port=80
+   10  kubectl run nginx --image=nginx
+   #the below command will not work as we need to create service in k8s
+   12  kubectl exec nginx -- curl monitoring
+   ##this is the ip address of the montiroing pod it will work
+   14  kubectl exec nginx -- curl 192.168.1.2
+   #we need to create service so that the dns resolution will work
+   16  kubectl expose pod monitoring --port=80
+   18  kubectl exec nginx -- curl monitoring
+
+
