@@ -12,6 +12,17 @@ sudo kubeadm init phase upload-certs --upload-certs
 
 sudo kubeadm init phase upload-certs --dry-run
 
+
+
+--need to add the ip here 
+kubectl -n kube-system get cm kubeadm-config -o yaml
+kubectl edit cm -n kube-system kubeadm-config
+
+    certificatesDir: /etc/kubernetes/pki
+    clusterName: kubernetes
+    controlPlaneEndpoint: 10.1.0.7:6443
+
+--got to node and run this
 kubeadm join 10.1.0.7:6443 --token ewm452.yzd6jb0ck29kevaf \
 --discovery-token-ca-cert-hash sha256:e68c0760168ca2e5a019dc5cead5663a7ffce3415acbd876b2fdbc1daec7eb28 \
 --control-plane \
