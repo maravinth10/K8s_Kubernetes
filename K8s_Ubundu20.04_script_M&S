@@ -25,17 +25,8 @@ kubeadm token create --print-join-command
 --for admin
  export KUBECONFIG=/etc/kubernetes/admin.conf
 
- 8  kubectl run monitoring --image=nginx
-    9  kubectl get pod -o wide
-   10  kubectl run nginx --image=nginx
-   11  kubectl get pod
-   #the below command will not work as we need to create service in k8s
-   12  kubectl exec nginx -- curl monitoring
-   13  kubectl get pod -o wide
-   ##this is the ip address of the montiroing pod it will work
-   14  kubectl exec nginx -- curl 192.168.1.2
-   15  kubectl get pod
-   #we need to create service so that the dns resolution will work
-   16  kubectl expose pod monitoring --port=80
-   17  kubectl expose pod nginx --port=80
-   18  kubectl exec nginx -- curl monitoring
+--to check the discovery-token-ca-cert-hash 
+openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
+
+kubectl run monitoring --image=nginx
+kubectl expose pod nginx --port=80
