@@ -1,0 +1,8 @@
+--to reset k8s run below cmd
+sudo kubeadm reset
+
+rm -rf /etc/cni/net.d
+rm $HOME/.kube/config
+rm /root/.kube/config
+ 
+
