@@ -1,0 +1,19 @@
+--to check the discovery-token-ca-cert-hash 
+openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
+
+--finaly get the join command from the master machine and paste in the worker node
+kubeadm token create --print-join-command
+
+kubectl -n kube-system  get Secret
+kubectl -n kube-system  describe Secret kubeadm-certs
+kubectl get secret kubeadm-certs -n kube-system -o yaml
+
+sudo kubeadm init phase upload-certs --upload-certs
+
+sudo kubeadm init phase upload-certs --dry-run
+
+kubeadm join 10.1.0.7:6443 --token ewm452.yzd6jb0ck29kevaf \
+--discovery-token-ca-cert-hash sha256:e68c0760168ca2e5a019dc5cead5663a7ffce3415acbd876b2fdbc1daec7eb28 \
+--control-plane \
+--certificate-key 328b3c7929792bc13ff9f9e77db132fe7e7739d9850dfec65afe0bc5185cebaa
+
