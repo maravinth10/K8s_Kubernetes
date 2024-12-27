@@ -4,13 +4,16 @@ openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outfor
 --finaly get the join command from the master machine and paste in the worker node
 kubeadm token create --print-join-command
 
+--to check the certificate-key
+kubeadm certs certificate-key
+-- no need   kubeadm init phase upload-certs --upload-certs
+-- no need   kubeadm init phase upload-certs --dry-run
+
 kubectl -n kube-system  get Secret
 kubectl -n kube-system  describe Secret kubeadm-certs
 kubectl get secret kubeadm-certs -n kube-system -o yaml
 
-sudo kubeadm init phase upload-certs --upload-certs
 
-sudo kubeadm init phase upload-certs --dry-run
 
 
 
