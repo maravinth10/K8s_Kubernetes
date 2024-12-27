@@ -1,3 +1,9 @@
+kubeadm init --control-plane-endpoint $(hostname -i) \
+--pod-network-cidr 10.0.0.0/8 \
+--apiserver-advertise-address=$(hostname -i) \
+--service-cidr 11.0.0.1/16 \
+--upload-certs
+
 Step:1
 --finaly get the join command from the master machine and paste in the worker node
 kubeadm token create --print-join-command
@@ -13,7 +19,7 @@ kubectl edit cm -n kube-system kubeadm-config
 
     certificatesDir: /etc/kubernetes/pki
     clusterName: kubernetes
-    controlPlaneEndpoint: localhost:6443
+    controlPlaneEndpoint: 192.168.0.8:6443
 
 
 
