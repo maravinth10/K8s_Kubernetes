@@ -14,11 +14,8 @@ Step:1
 kubeadm token create --print-join-command
 
 Step:2
---to check the certificate-key
-openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1
-or try this
-openssl rsa  -in /etc/kubernetes/pki/ca.crt -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1
-openssl rsa -pubin -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1
+--to upload the certificate-key
+kubeadm init phase upload-certs --upload-certs
 
 Step:3
 --need to add the controlPlaneEndpoint here 
