@@ -4,6 +4,11 @@ kubeadm init --control-plane-endpoint $(hostname -i) \
 --service-cidr 11.0.0.1/16 \
 --upload-certs
 
+export KUBECONFIG=/etc/kubernetes/admin.conf
+
+--Initialize cluster networking:
+kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
+
 Step:1
 --finaly get the join command from the master machine and paste in the worker node
 kubeadm token create --print-join-command
@@ -26,7 +31,7 @@ kubectl edit cm -n kube-system kubeadm-config
 
 
 
--- no need   kubeadm init phase upload-certs --upload-certs
+-- if required use this to generate new cert   kubeadm init phase upload-certs --upload-certs
 -- no need   kubeadm init phase upload-certs --dry-run
 --to check the discovery-token-ca-cert-hash 
 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
