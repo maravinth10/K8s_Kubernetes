@@ -12,6 +12,8 @@ Step:2
 --to check the certificate-key
 kubeadm certs certificate-key
 
+openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1
+
 Step:3
 --need to add the controlPlaneEndpoint here 
 kubectl -n kube-system get cm kubeadm-config -o yaml
