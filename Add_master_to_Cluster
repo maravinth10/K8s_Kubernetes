@@ -1,5 +1,5 @@
 kubeadm init --control-plane-endpoint $(hostname -i) \
---pod-network-cidr 10.0.0.0/8 \
+--pod-network-cidr 10.5.0.0/16 \
 --apiserver-advertise-address=$(hostname -i) \
 --service-cidr 11.0.0.1/16 \
 --upload-certs
@@ -10,9 +10,10 @@ kubeadm token create --print-join-command
 
 Step:2
 --to check the certificate-key
-kubeadm certs certificate-key
-
 openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1
+or try this
+openssl rsa  -in /etc/kubernetes/pki/ca.crt -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1
+openssl rsa -pubin -outform DER 2>/dev/null | sha256sum | cut -d' ' -f1
 
 Step:3
 --need to add the controlPlaneEndpoint here 
@@ -40,4 +41,6 @@ kubeadm join 10.1.0.7:6443 --token ewm452.yzd6jb0ck29kevaf \
 --discovery-token-ca-cert-hash sha256:e68c0760168ca2e5a019dc5cead5663a7ffce3415acbd876b2fdbc1daec7eb28 \
 --control-plane \
 --certificate-key 328b3c7929792bc13ff9f9e77db132fe7e7739d9850dfec65afe0bc5185cebaa
+
+kubeadm certs certificate-key
 
