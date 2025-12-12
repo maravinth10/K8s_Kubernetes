@@ -74,6 +74,8 @@ data:
         symbol: str
         buy_price: float
         qty: int
+        buy_date: str  # or date
+        sell_date: Optional[str] = None
 
     @app.get("/", response_class=HTMLResponse)
     def serve_home():
@@ -87,8 +89,8 @@ data:
             cursor = conn.cursor()
             current_value = stock.buy_price * stock.qty
             cursor.execute(
-                "INSERT INTO portfolio (stock_name, symbol, buy_price, current_value, qty) VALUES (%s, %s, %s, %s, %s)",
-                (stock.stock_name, stock.symbol, stock.buy_price, current_value, stock.qty)
+                "INSERT INTO portfolio (stock_name, symbol, buy_price, current_value, qty, buy_date, sell_date) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+                (stock.stock_name, stock.symbol, stock.buy_price, current_value, stock.qty, stock.buy_date, stock.sell_date)
             )
             conn.commit()
             return {"status": "added"}
