@@ -14,13 +14,18 @@ spec:
     spec:
       containers:
         - name: fastapi
-          image: tiangolo/uvicorn-gunicorn-fastapi:python3.11
+          image: python:3.11
+          workingDir: /code
           command: ["/bin/bash", "-c"]
           args:
-            - pip install -r /app/requirements.txt &&
+            - apt-get update && apt-get install -y curl &&
+              curl -L -o /code/index.html https://raw.githubusercontent.com/maravinth10/K8s_Kubernetes/main/Stock_update_app/index.html &&
+              pip install --no-cache-dir -r /code/requirements.txt &&
               uvicorn main:app --host 0.0.0.0 --port 8000
+
           ports:
             - containerPort: 8000
+
           env:
             - name: DB_HOST
               value: postgres-service
@@ -41,16 +46,15 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTGRES_PASSWORD
+
           volumeMounts:
             - name: app-code
-              mountPath: /app/main.py
+              mountPath: /code/main.py
               subPath: main.py
             - name: app-requirements
-              mountPath: /app/requirements.txt
+              mountPath: /code/requirements.txt
               subPath: requirements.txt
-            - name: app-html
-              mountPath: /app/index.html
-              subPath: index.html    
+
       volumes:
         - name: app-code
           configMap:
@@ -58,9 +62,7 @@ spec:
         - name: app-requirements
           configMap:
             name: fastapi-requirements
-        - name: app-html
-          configMap:
-            name: fastapi-code     
+
 ---
 apiVersion: v1
 kind: Service
@@ -73,5 +75,4 @@ spec:
     - port: 8000
       targetPort: 8000
       nodePort: 30001
-
   type: NodePort
