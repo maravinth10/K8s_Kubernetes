@@ -3,157 +3,158 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Indian Stocks Portfolio Tracker</title>
+<title>Portfolio Tracker</title>
+
 <style>
-  :root {
-    --bg: #0b1020;
-    --card: #141a32;
-    --text: #e5e7eb;
-    --muted: #9ca3af;
-    --primary: #6366f1;
-    --success: #10b981;
-    --danger: #ef4444;
-    --button-bg: #374151;
-    --button-hover: #4b5563;
-  }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; font-family: Inter, system-ui, -apple-system, Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
-  .container { max-width: 1200px; margin: 32px auto; padding: 0 16px; }
-  h1 { font-weight: 700; margin-bottom: 24px; }
-  h2 { font-weight: 600; margin-bottom: 16px; }
-  .card { background: var(--card); border: 1px solid #2a2f60; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-  .grid { display: grid; gap: 12px; }
-  .grid-6 { grid-template-columns: repeat(6, 1fr); }
-  label { display: block; font-size: 0.9em; color: var(--muted); margin-bottom: 6px; }
-  input, select { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #334; background: #0e1530; color: #fff; }
-  button { padding: 10px 14px; border-radius: 6px; border: 0; background: var(--primary); color: white; cursor: pointer; }
-  button:hover { opacity: 0.9; }
-  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-  th, td { padding: 8px; border-bottom: 1px solid #2b2f60; font-size: 0.95em; }
-  th { color: var(--text); font-weight: 600; }
-  td.actions button { background: var(--button-bg); margin-right: 6px; }
-  td.actions button:hover { background: var(--button-hover); }
+  body { background:#0b1020; color:white; font-family:Arial; padding:20px; }
+  table { width:100%; border-collapse:collapse; margin-top:20px; }
+  th, td { padding:10px; border-bottom:1px solid #333; text-align:left; }
+  .profit { color:#10b981; font-weight:bold; }
+  .loss { color:#ef4444; font-weight:bold; }
+  .totals-row td { font-weight:bold; background:#141a32; }
+  input, button { padding:8px; border-radius:5px; border:0; }
+  button { background:#6366f1; color:white; cursor:pointer; }
+  button:hover { opacity:0.9; }
 </style>
 </head>
+
 <body>
-<div class="container">
-  <h1>Indian Stocks Portfolio Tracker</h1>
 
-  <section class="card">
-    <h2>Add Holding</h2>
-    <form id="addForm" class="grid grid-6" style="align-items:end;">
-      <div style="grid-column: span 2;">
-        <label for="symbol">Symbol</label>
-        <input id="symbol" placeholder="RELIANCE.NS" required />
-      </div>
-      <div>
-        <label for="qty">Quantity</label>
-        <input id="qty" type="number" step="0.01" />
-      </div>
-      <div>
-        <label for="avgCost">Buy Price</label>
-        <input id="avgCost" type="number" step="0.01" />
-      </div>
-      <div style="grid-column: span 2;">
-        <label for="stockName">Stock Name</label>
-        <input id="stockName" placeholder="Stock Name" />
-      </div>
-      <div style="grid-column: span 2;">
-        <button type="submit">Add Holding</button>
-      </div>
-    </form>
-  </section>
+<h1>Indian Stocks Portfolio Tracker</h1>
 
-  <section class="card">
-    <h2>Holdings</h2>
-    <table id="holdingsTable">
-      <thead>
-        <tr>
-          <th>Stock</th>
-          <th>Symbol</th>
-          <th>Qty</th>
-          <th>Buy Price</th>
-          <th>Current Price</th>
-          <th>Total Invested</th>
-          <th>Current Value</th>
-          <th>Profit/Loss</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="holdingsBody"></tbody>
-    </table>
-  </section>
-</div>
+<h2>Add Stock</h2>
+<form id="addForm">
+  <input id="symbol" placeholder="Symbol (TCS)" required>
+  <input id="qty" type="number" placeholder="Qty" required>
+  <input id="avgCost" type="number" step="0.01" placeholder="Avg Cost" required>
+  <button type="submit">Add</button>
+</form>
+
+<h2>Holdings</h2>
+
+<table>
+<thead>
+<tr>
+  <th>Symbol</th>
+  <th>Qty</th>
+  <th>Avg Cost</th>
+  <th>Current Price</th>
+  <th>Invested</th>
+  <th>Market Value</th>
+  <th>P/L</th>
+  <th>Action</th>
+</tr>
+</thead>
+<tbody id="holdingsBody"></tbody>
+
+<!-- TOTALS ROW -->
+<tbody>
+<tr class="totals-row">
+  <td>Total</td>
+  <td id="tQty"></td>
+  <td id="tAvgCost"></td>
+  <td id="tAvgCurrentPrice"></td>
+  <td id="tInvested"></td>
+  <td id="tMarket"></td>
+  <td id="tPL"></td>
+  <td></td>
+</tr>
+</tbody>
+</table>
+
 
 <script>
-const API_URL = "";
+const API = window.location.origin;
 
-async function fetchCurrentPrice(symbol){
-  try {
-    const res = await fetch(`${API_URL}/get_price?symbol=${symbol}`);
-    const data = await res.json();
-    return parseFloat(data.price) || 0;
-  } catch {
-    return 0;
-  }
+// INR formatter
+function fmtINR(n){
+  return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(n);
 }
 
-const addForm = document.getElementById('addForm');
-const holdingsBody = document.getElementById('holdingsBody');
+async function getCurrentPrice(symbol){
+  const url = `${API}/get_price?symbol=${symbol}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return data.price || 0;
+}
 
-function fmtINR(n){ return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(n) }
-
-async function renderHoldings(){
-  holdingsBody.innerHTML = '';
-  const res = await fetch(`${API_URL}/get_portfolio`);
+async function loadHoldings(){
+  const res = await fetch(`${API}/get_portfolio`);
   const holdings = await res.json();
-  for(const h of holdings){
-    const currentPrice = await fetchCurrentPrice(h.symbol);
-    const totalInvested = h.buy_price * h.qty;
-    const currentValue = currentPrice * h.qty;
-    const profit = currentValue - totalInvested;
 
-    const tr = document.createElement('tr');
+  const tbody = document.getElementById("holdingsBody");
+  tbody.innerHTML = "";
+
+  let totalQty = 0;
+  let totalInvested = 0;
+  let totalMarket = 0;
+  let totalCostSum = 0;
+
+  for(const h of holdings){
+    const currentPrice = await getCurrentPrice(h.symbol);
+    const invested = h.buy_price * h.qty;
+    const marketVal = currentPrice * h.qty;
+    const pl = marketVal - invested;
+
+    totalQty += h.qty;
+    totalInvested += invested;
+    totalMarket += marketVal;
+    totalCostSum += h.buy_price * h.qty;
+
+    const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${h.stock_name}</td>
       <td>${h.symbol}</td>
       <td>${h.qty}</td>
       <td>${fmtINR(h.buy_price)}</td>
       <td>${fmtINR(currentPrice)}</td>
-      <td>${fmtINR(totalInvested)}</td>
-      <td>${fmtINR(currentValue)}</td>
-      <td style="color:${profit>=0?'#10b981':'#ef4444'}">${fmtINR(profit)}</td>
-      <td class="actions"><button data-id="${h.id}">Delete</button></td>
+      <td>${fmtINR(invested)}</td>
+      <td>${fmtINR(marketVal)}</td>
+      <td class="${pl>=0?'profit':'loss'}">${fmtINR(pl)}</td>
+      <td><button onclick="delStock(${h.id})">Delete</button></td>
     `;
-    holdingsBody.appendChild(tr);
+    tbody.appendChild(tr);
   }
 
-  holdingsBody.querySelectorAll('button[data-id]').forEach(btn=>{
-    btn.addEventListener('click', async e=>{
-      const id = e.currentTarget.getAttribute('data-id');
-      await fetch(`${API_URL}/delete_stock/${id}`, { method: 'DELETE' });
-      renderHoldings();
-    });
-  });
+  // Totals
+  const avgCost = totalQty ? totalCostSum / totalQty : 0;
+  const avgCurrentPrice = totalQty ? totalMarket / totalQty : 0;
+  const totalPL = totalMarket - totalInvested;
+
+  document.getElementById("tQty").innerText = totalQty;
+  document.getElementById("tInvested").innerText = fmtINR(totalInvested);
+  document.getElementById("tMarket").innerText = fmtINR(totalMarket);
+  document.getElementById("tPL").innerHTML =
+    `<span class="${totalPL>=0?'profit':'loss'}">${fmtINR(totalPL)}</span>`;
+  document.getElementById("tAvgCost").innerText = fmtINR(avgCost);
+  document.getElementById("tAvgCurrentPrice").innerText = fmtINR(avgCurrentPrice);
 }
 
-addForm.addEventListener('submit', async ev=>{
-  ev.preventDefault();
-  const symbol = document.getElementById('symbol').value.trim();
-  const stock_name = document.getElementById('stockName').value.trim();
-  const qty = parseFloat(document.getElementById('qty').value || '0');
-  const buy_price = parseFloat(document.getElementById('avgCost').value || '0');
-  if(!symbol) return;
-  await fetch(`${API_URL}/add_stock`, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({symbol, stock_name, qty, buy_price})
-  });
-  addForm.reset();
-  renderHoldings();
-});
+// Delete
+async function delStock(id){
+  await fetch(`${API}/delete_stock/${id}`, {method:"DELETE"});
+  loadHoldings();
+}
 
-window.addEventListener('DOMContentLoaded', renderHoldings);
+// Add
+document.getElementById("addForm").onsubmit = async (e)=>{
+  e.preventDefault();
+  const body = {
+    stock_name: symbol.value,
+    symbol: symbol.value,
+    buy_price: parseFloat(avgCost.value),
+    qty: parseInt(qty.value)
+  };
+  await fetch(`${API}/add_stock`, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)
+  });
+  e.target.reset();
+  loadHoldings();
+};
+
+loadHoldings();
 </script>
+
 </body>
 </html>
