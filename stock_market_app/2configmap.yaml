@@ -61,7 +61,9 @@ data:
             symbol VARCHAR(50) NOT NULL,
             buy_price NUMERIC NOT NULL,
             current_value NUMERIC NOT NULL,
-            qty INTEGER NOT NULL
+            qty INTEGER NOT NULL,
+            buy_date DATE NOT NULL,
+            sell_date DATE
         )
         """)
         conn.commit()
