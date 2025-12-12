@@ -22,11 +22,11 @@ data:
     import yfinance as yf
     from pydantic import BaseModel
     from fastapi.middleware.cors import CORSMiddleware
-    from fastapi.responses import HTMLResponse
+    from fastapi.responses import HTMLResponse, JSONResponse
 
     app = FastAPI()
 
-    # Allow all CORS (frontend access)
+    # Allow all CORS
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -50,7 +50,6 @@ data:
             password=DB_PASSWORD
         )
 
-    # Create table if it doesn't exist
     def create_portfolio_table():
         conn = get_connection()
         cursor = conn.cursor()
@@ -122,6 +121,19 @@ data:
             cursor.close()
             conn.close()
 
+    @app.get("/get_price")
+    def get_price(symbol: str):
+        """Fetch latest stock price using yfinance"""
+        try:
+            data = yf.Ticker(symbol)
+            history = data.history(period="1d")
+            if history.empty:
+                return JSONResponse({"price": 0})
+            latest_price = history['Close'].iloc[-1]
+            return {"price": float(latest_price)}
+        except Exception:
+            return JSONResponse({"price": 0})
+
     @app.put("/update_stock/{id}")
     def update_stock(id: int, field: str, value: float):
         if field not in ["buy_price", "qty"]:
@@ -147,31 +159,3 @@ data:
         finally:
             cursor.close()
             conn.close()
-
-    @app.get("/update_current_values")
-    def update_current_values():
-        try:
-            conn = get_connection()
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, symbol, qty FROM portfolio")
-            rows = cursor.fetchall()
-            for row in rows:
-                id, symbol, qty = row
-                data = yf.Ticker(symbol + ".NS")
-                history = data.history(period="1d")
-                if history.empty:
-                    continue
-                latest_price = history['Close'].iloc[-1]
-                current_value = latest_price * qty
-                cursor.execute(
-                    "UPDATE portfolio SET current_value=%s WHERE id=%s",
-                    (current_value, id)
-                )
-            conn.commit()
-            return {"status": "updated"}
-        finally:
-            cursor.close()
-            conn.close()
-
-
-
