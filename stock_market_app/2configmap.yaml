@@ -109,7 +109,7 @@ data:
         try:
             conn = get_connection()
             cursor = conn.cursor()
-            cursor.execute("SELECT id, stock_name, symbol, buy_price, current_value, qty FROM portfolio")
+            cursor.execute("SELECT id, stock_name, symbol, buy_price, current_value, qty, buy_date, sell_date FROM portfolio")
             rows = cursor.fetchall()
             result = []
             for r in rows:
@@ -119,7 +119,9 @@ data:
                     "symbol": r[2],
                     "buy_price": float(r[3]),
                     "current_value": float(r[4]),
-                    "qty": r[5]
+                    "qty": r[5],
+                    "buy_date": DATE(r[6]),
+					"sell_date": DATE(r[7])
                 })
             return result
         finally:
