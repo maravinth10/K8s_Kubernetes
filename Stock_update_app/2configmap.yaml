@@ -9,7 +9,7 @@ data:
     psycopg2-binary
     pandas
     yfinance
----	
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
