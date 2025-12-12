@@ -120,8 +120,8 @@ data:
                     "buy_price": float(r[3]),
                     "current_value": float(r[4]),
                     "qty": r[5],
-                    "buy_date": DATE(r[6]),
-					"sell_date": DATE(r[7])
+					"buy_date": r[6].isoformat() if r[6] else None,
+					"sell_date": r[7].isoformat() if r[7] else None
                 })
             return result
         finally:
