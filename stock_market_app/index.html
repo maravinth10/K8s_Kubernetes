@@ -119,8 +119,11 @@ async function loadHoldings(){
       <td>${fmtINR(marketVal)}</td>
       <td class="${pl>=0?'profit':'loss'}">${fmtINR(pl)}</td>
       <td>${h.buy_date || ''}</td>
-      <td>${h.sell_date || ''}</td>
-      <td><button onclick="delStock(${h.id})">Delete</button></td>
+      <td><input type="date" id="sellDate-${h.id}" value="${h.sell_date || ''}"></td>
+      <td>
+	  <button onclick="delStock(${h.id})">Delete</button>
+	  <button onclick="updateSellDate(${h.id})">Update</button>
+	  </td>
     `;
     tbody.appendChild(tr);
   }
@@ -144,6 +147,22 @@ async function delStock(id){
   await fetch(`${API}/delete_stock/${id}`, {method:"DELETE"});
   loadHoldings();
 }
+
+// update sell date
+async function updateSellDate(id){
+  const dateInput = document.getElementById(`sellDate-${id}`);
+  const value = dateInput.value;
+  
+  if(!value){
+    alert("Please select a date");
+    return;
+  }
+  
+  await fetch(`${API}/update_stock/${id}?field=sell_date&value=${value}`, {method: "PUT"});
+  
+  loadHoldings();
+}
+
 
 // Add
 document.getElementById("addForm").onsubmit = async (e)=>{
