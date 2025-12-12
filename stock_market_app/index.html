@@ -20,13 +20,16 @@
 
 <body>
 
-<h1>Indian Stocks Portfolio Tracker</h1>
+<h1>Stocks Portfolio Tracker</h1>
 
 <h2>Add Stock</h2>
 <form id="addForm">
-  <input id="symbol" placeholder="Symbol (TCS)" required>
+  <input id="symbol" placeholder="Symbol (^NSEI)" required>
+  <input id="stockName" placeholder="Stock Name" required>
   <input id="qty" type="number" placeholder="Qty" required>
   <input id="avgCost" type="number" step="0.01" placeholder="Avg Cost" required>
+  <input id="buyDate" type="date" placeholder="Buy Date" required>
+  <input id="sellDate" type="date" placeholder="Sell Date">
   <button type="submit">Add</button>
 </form>
 
@@ -35,6 +38,7 @@
 <table>
 <thead>
 <tr>
+  <th>Stock Name</th>
   <th>Symbol</th>
   <th>Qty</th>
   <th>Avg Cost</th>
@@ -42,6 +46,8 @@
   <th>Invested</th>
   <th>Market Value</th>
   <th>P/L</th>
+  <th>Buy Date</th>
+  <th>Sell Date</th>
   <th>Action</th>
 </tr>
 </thead>
@@ -103,6 +109,7 @@ async function loadHoldings(){
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
+      <td>${h.stock_name}</td>
       <td>${h.symbol}</td>
       <td>${h.qty}</td>
       <td>${fmtINR(h.buy_price)}</td>
@@ -110,6 +117,8 @@ async function loadHoldings(){
       <td>${fmtINR(invested)}</td>
       <td>${fmtINR(marketVal)}</td>
       <td class="${pl>=0?'profit':'loss'}">${fmtINR(pl)}</td>
+      <td>${h.buy_date || ''}</td>
+      <td>${h.sell_date || ''}</td>
       <td><button onclick="delStock(${h.id})">Delete</button></td>
     `;
     tbody.appendChild(tr);
@@ -139,10 +148,12 @@ async function delStock(id){
 document.getElementById("addForm").onsubmit = async (e)=>{
   e.preventDefault();
   const body = {
-    stock_name: symbol.value,
+    stock_name: stockName.value,
     symbol: symbol.value,
     buy_price: parseFloat(avgCost.value),
-    qty: parseInt(qty.value)
+    qty: parseInt(qty.value),
+    buy_date: buyDate.value,
+    sell_date: sellDate.value || null
   };
   await fetch(`${API}/add_stock`, {
     method:"POST",
