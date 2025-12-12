@@ -1,0 +1,95 @@
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Portfolio Tracker</title>
+        <style>
+            body { font-family: sans-serif; margin: 20px; }
+            table { width: 80%; border-collapse: collapse; margin-top: 20px; }
+            td, th { border: 1px solid #ccc; padding: 8px; }
+        </style>
+    </head>
+    <body>
+
+        <h1>Indian Stocks Portfolio Tracker</h1>
+
+        <h2>Add Stock</h2>
+        <form id="formAdd">
+            <input id="stock_name" placeholder="Stock Name" required>
+            <input id="symbol" placeholder="Symbol" required>
+            <input id="buy_price" type="number" step="0.01" placeholder="Buy Price" required>
+            <input id="qty" type="number" placeholder="Quantity" required>
+            <button>Add</button>
+        </form>
+
+        <h2>Portfolio</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th><th>Symbol</th><th>Buy Price</th><th>Qty</th><th>Current Value</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tbl"></tbody>
+        </table>
+
+        <button onclick="updateValues()">Update Current Values</button>
+
+        <script>
+            const API = window.location.origin;
+
+            async function load() {
+                const res = await fetch(API + "/get_portfolio");
+                const data = await res.json();
+
+                const tbody = document.getElementById("tbl");
+                tbody.innerHTML = "";
+
+                data.forEach(s => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${s.stock_name}</td>
+                            <td>${s.symbol}</td>
+                            <td><input type="number" step="0.01" value="${s.buy_price}" onchange="updateField(${s.id}, 'buy_price', this.value)"></td>
+                            <td><input type="number" value="${s.qty}" onchange="updateField(${s.id}, 'qty', this.value)"></td>
+                            <td>${s.current_value.toFixed(2)}</td>
+                            <td><button onclick="del(${s.id})">Delete</button></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            async function updateField(id, field, value) {
+                await fetch(API + `/update_stock/${id}?field=${field}&value=${value}`, { method:"PUT" });
+                load();
+            }
+
+            async function del(id) {
+                await fetch(API + `/delete_stock/${id}`, { method:"DELETE" });
+                load();
+            }
+
+            document.getElementById("formAdd").onsubmit = async (e) => {
+                e.preventDefault();
+                const body = {
+                    stock_name: stock_name.value,
+                    symbol: symbol.value,
+                    buy_price: parseFloat(buy_price.value),
+                    qty: parseInt(qty.value)
+                };
+                await fetch(API + "/add_stock", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(body)
+                });
+                e.target.reset();
+                load();
+            };
+
+            async function updateValues() {
+                await fetch(API + "/update_current_values");
+                load();
+            }
+
+            load();
+        </script>
+    </body>
+    </html>
