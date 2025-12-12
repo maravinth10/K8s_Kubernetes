@@ -1,95 +1,159 @@
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Portfolio Tracker</title>
-        <style>
-            body { font-family: sans-serif; margin: 20px; }
-            table { width: 80%; border-collapse: collapse; margin-top: 20px; }
-            td, th { border: 1px solid #ccc; padding: 8px; }
-        </style>
-    </head>
-    <body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Indian Stocks Portfolio Tracker</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --card: #141a32;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --primary: #6366f1;
+    --success: #10b981;
+    --danger: #ef4444;
+    --button-bg: #374151;
+    --button-hover: #4b5563;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; font-family: Inter, system-ui, -apple-system, Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
+  .container { max-width: 1200px; margin: 32px auto; padding: 0 16px; }
+  h1 { font-weight: 700; margin-bottom: 24px; }
+  h2 { font-weight: 600; margin-bottom: 16px; }
+  .card { background: var(--card); border: 1px solid #2a2f60; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .grid { display: grid; gap: 12px; }
+  .grid-6 { grid-template-columns: repeat(6, 1fr); }
+  label { display: block; font-size: 0.9em; color: var(--muted); margin-bottom: 6px; }
+  input, select { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #334; background: #0e1530; color: #fff; }
+  button { padding: 10px 14px; border-radius: 6px; border: 0; background: var(--primary); color: white; cursor: pointer; }
+  button:hover { opacity: 0.9; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th, td { padding: 8px; border-bottom: 1px solid #2b2f60; font-size: 0.95em; }
+  th { color: var(--text); font-weight: 600; }
+  td.actions button { background: var(--button-bg); margin-right: 6px; }
+  td.actions button:hover { background: var(--button-hover); }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Indian Stocks Portfolio Tracker</h1>
 
-        <h1>Indian Stocks Portfolio Tracker</h1>
+  <section class="card">
+    <h2>Add Holding</h2>
+    <form id="addForm" class="grid grid-6" style="align-items:end;">
+      <div style="grid-column: span 2;">
+        <label for="symbol">Symbol</label>
+        <input id="symbol" placeholder="RELIANCE.NS" required />
+      </div>
+      <div>
+        <label for="qty">Quantity</label>
+        <input id="qty" type="number" step="0.01" />
+      </div>
+      <div>
+        <label for="avgCost">Buy Price</label>
+        <input id="avgCost" type="number" step="0.01" />
+      </div>
+      <div style="grid-column: span 2;">
+        <label for="stockName">Stock Name</label>
+        <input id="stockName" placeholder="Stock Name" />
+      </div>
+      <div style="grid-column: span 2;">
+        <button type="submit">Add Holding</button>
+      </div>
+    </form>
+  </section>
 
-        <h2>Add Stock</h2>
-        <form id="formAdd">
-            <input id="stock_name" placeholder="Stock Name" required>
-            <input id="symbol" placeholder="Symbol" required>
-            <input id="buy_price" type="number" step="0.01" placeholder="Buy Price" required>
-            <input id="qty" type="number" placeholder="Quantity" required>
-            <button>Add</button>
-        </form>
+  <section class="card">
+    <h2>Holdings</h2>
+    <table id="holdingsTable">
+      <thead>
+        <tr>
+          <th>Stock</th>
+          <th>Symbol</th>
+          <th>Qty</th>
+          <th>Buy Price</th>
+          <th>Current Price</th>
+          <th>Total Invested</th>
+          <th>Current Value</th>
+          <th>Profit/Loss</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="holdingsBody"></tbody>
+    </table>
+  </section>
+</div>
 
-        <h2>Portfolio</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th><th>Symbol</th><th>Buy Price</th><th>Qty</th><th>Current Value</th><th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="tbl"></tbody>
-        </table>
+<script>
+const API_URL = "";
 
-        <button onclick="updateValues()">Update Current Values</button>
+async function fetchCurrentPrice(symbol){
+  try {
+    const res = await fetch(`${API_URL}/get_price?symbol=${symbol}`);
+    const data = await res.json();
+    return parseFloat(data.price) || 0;
+  } catch {
+    return 0;
+  }
+}
 
-        <script>
-            const API = window.location.origin;
+const addForm = document.getElementById('addForm');
+const holdingsBody = document.getElementById('holdingsBody');
 
-            async function load() {
-                const res = await fetch(API + "/get_portfolio");
-                const data = await res.json();
+function fmtINR(n){ return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(n) }
 
-                const tbody = document.getElementById("tbl");
-                tbody.innerHTML = "";
+async function renderHoldings(){
+  holdingsBody.innerHTML = '';
+  const res = await fetch(`${API_URL}/get_portfolio`);
+  const holdings = await res.json();
+  for(const h of holdings){
+    const currentPrice = await fetchCurrentPrice(h.symbol);
+    const totalInvested = h.buy_price * h.qty;
+    const currentValue = currentPrice * h.qty;
+    const profit = currentValue - totalInvested;
 
-                data.forEach(s => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${s.stock_name}</td>
-                            <td>${s.symbol}</td>
-                            <td><input type="number" step="0.01" value="${s.buy_price}" onchange="updateField(${s.id}, 'buy_price', this.value)"></td>
-                            <td><input type="number" value="${s.qty}" onchange="updateField(${s.id}, 'qty', this.value)"></td>
-                            <td>${s.current_value.toFixed(2)}</td>
-                            <td><button onclick="del(${s.id})">Delete</button></td>
-                        </tr>
-                    `;
-                });
-            }
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${h.stock_name}</td>
+      <td>${h.symbol}</td>
+      <td>${h.qty}</td>
+      <td>${fmtINR(h.buy_price)}</td>
+      <td>${fmtINR(currentPrice)}</td>
+      <td>${fmtINR(totalInvested)}</td>
+      <td>${fmtINR(currentValue)}</td>
+      <td style="color:${profit>=0?'#10b981':'#ef4444'}">${fmtINR(profit)}</td>
+      <td class="actions"><button data-id="${h.id}">Delete</button></td>
+    `;
+    holdingsBody.appendChild(tr);
+  }
 
-            async function updateField(id, field, value) {
-                await fetch(API + `/update_stock/${id}?field=${field}&value=${value}`, { method:"PUT" });
-                load();
-            }
+  holdingsBody.querySelectorAll('button[data-id]').forEach(btn=>{
+    btn.addEventListener('click', async e=>{
+      const id = e.currentTarget.getAttribute('data-id');
+      await fetch(`${API_URL}/delete_stock/${id}`, { method: 'DELETE' });
+      renderHoldings();
+    });
+  });
+}
 
-            async function del(id) {
-                await fetch(API + `/delete_stock/${id}`, { method:"DELETE" });
-                load();
-            }
+addForm.addEventListener('submit', async ev=>{
+  ev.preventDefault();
+  const symbol = document.getElementById('symbol').value.trim();
+  const stock_name = document.getElementById('stockName').value.trim();
+  const qty = parseFloat(document.getElementById('qty').value || '0');
+  const buy_price = parseFloat(document.getElementById('avgCost').value || '0');
+  if(!symbol) return;
+  await fetch(`${API_URL}/add_stock`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({symbol, stock_name, qty, buy_price})
+  });
+  addForm.reset();
+  renderHoldings();
+});
 
-            document.getElementById("formAdd").onsubmit = async (e) => {
-                e.preventDefault();
-                const body = {
-                    stock_name: stock_name.value,
-                    symbol: symbol.value,
-                    buy_price: parseFloat(buy_price.value),
-                    qty: parseInt(qty.value)
-                };
-                await fetch(API + "/add_stock", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify(body)
-                });
-                e.target.reset();
-                load();
-            };
-
-            async function updateValues() {
-                await fetch(API + "/update_current_values");
-                load();
-            }
-
-            load();
-        </script>
-    </body>
-    </html>
+window.addEventListener('DOMContentLoaded', renderHoldings);
+</script>
+</body>
+</html>
