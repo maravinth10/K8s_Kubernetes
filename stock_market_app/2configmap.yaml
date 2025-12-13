@@ -146,7 +146,7 @@ data:
         deposit_date: str
         current_balance: float
         future_balance: Optional[float] = None
-        future_date: Optional[date] = None
+        future_date: Optional[str] = None
         interest_rate: Optional[float] = None
 
     # ---------- HTML ----------
