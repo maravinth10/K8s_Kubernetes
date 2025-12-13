@@ -145,9 +145,9 @@ data:
         account_type: str
         deposit_date: str
         current_balance: float
-        future_balance: float
-        future_date: str
-        interest_rate: float
+        future_balance: Optional[float] = None
+        future_date: Optional[date] = None
+        interest_rate: Optional[float] = None
 
     # ---------- HTML ----------
     @app.get("/", response_class=HTMLResponse)
