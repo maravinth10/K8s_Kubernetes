@@ -102,9 +102,9 @@ data:
             account_type VARCHAR(50) NOT NULL,
             deposit_date DATE NOT NULL,
             current_balance NUMERIC NOT NULL,
-            future_balance NUMERIC NOT NULL,
-            future_date DATE NOT NULL,
-            interest_rate NUMERIC NOT NULL
+            future_balance NUMERIC,
+            future_date DATE,
+            interest_rate NUMERIC
         )
         """)
         conn.commit()
