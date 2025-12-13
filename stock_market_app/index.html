@@ -194,9 +194,9 @@
     <input id="accountType" placeholder="Account Type" required>
     <input id="depositDate" type="date" placeholder="Deposit Date" required>
     <input id="currentBalance" type="number" step="0.01" placeholder="Current Balance" required>
-    <input id="futureBalance" type="number" step="0.01" placeholder="Future Balance" required>
-    <input id="futureDate" type="date" placeholder="Future Date" required>
-    <input id="interestRate" type="number" step="0.01" placeholder="Interest Rate (%)" required>
+    <input id="futureBalance" type="number" step="0.01" placeholder="Future Balance" >
+    <input id="futureDate" type="date" placeholder="Future Date" >
+    <input id="interestRate" type="number" step="0.01" placeholder="Interest Rate (%)" >
     <button type="submit">Add Bank Account</button>
   </form>
 
@@ -510,9 +510,9 @@ document.getElementById('addBankForm').onsubmit=async e=>{
     account_type:document.getElementById('accountType').value,
     deposit_date:document.getElementById('depositDate').value,
     current_balance:parseFloat(document.getElementById('currentBalance').value),
-    future_balance:parseFloat(document.getElementById('futureBalance').value),
-    future_date:document.getElementById('futureDate').value,
-    interest_rate:parseFloat(document.getElementById('interestRate').value)
+    future_balance:parseFloat(document.getElementById('futureBalance').value ? parseFloat(document.getElementById('futureBalance').value) : null),
+    future_date:document.getElementById('futureDate').value || null,
+    interest_rate:parseFloat(document.getElementById('interestRate').value ? parseFloat(document.getElementById('interestRate').value) : null)
   };
   await fetch(`${API}/add_bank`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
   e.target.reset(); loadBank();
