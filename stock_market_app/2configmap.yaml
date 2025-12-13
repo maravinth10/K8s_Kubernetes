@@ -16,7 +16,7 @@ metadata:
   name: fastapi-code
 data:
   main.py: |
-    from fastapi import FastAPI
+    from fastapi import FastAPI, Query
     import os
     import psycopg2
     import yfinance as yf
@@ -24,9 +24,8 @@ data:
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import HTMLResponse, JSONResponse
     from typing import Optional
-    from fastapi import Query
     from datetime import datetime
-    
+
     app = FastAPI()
 
     # Allow all CORS
@@ -43,7 +42,7 @@ data:
     DB_NAME = os.getenv("DB_NAME")
     DB_USER = os.getenv("DB_USER")
     DB_PASSWORD = os.getenv("DB_PASSWORD")
-    
+
     def get_connection():
         return psycopg2.connect(
             host=DB_HOST,
@@ -53,125 +52,348 @@ data:
             password=DB_PASSWORD
         )
 
-    def create_portfolio_table():
+    # ---------- CREATE TABLES ----------
+    def create_tables():
         conn = get_connection()
         cursor = conn.cursor()
+        # Stocks
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS portfolio (
             id SERIAL PRIMARY KEY,
             stock_name VARCHAR(255) NOT NULL,
             symbol VARCHAR(50) NOT NULL,
             buy_price NUMERIC NOT NULL,
-            current_value NUMERIC NOT NULL,
             qty INTEGER NOT NULL,
             buy_date DATE NOT NULL,
             sell_date DATE
+        )
+        """)
+        # Crypto
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS crypto (
+            id SERIAL PRIMARY KEY,
+            crypto_name VARCHAR(255) NOT NULL,
+            symbol VARCHAR(50) NOT NULL,
+            avg_cost NUMERIC NOT NULL,
+            qty NUMERIC NOT NULL,
+            buy_date DATE NOT NULL,
+            sell_date DATE
+        )
+        """)
+        # Mutual Funds
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS mf (
+            id SERIAL PRIMARY KEY,
+            fund_name VARCHAR(255) NOT NULL,
+            symbol VARCHAR(50) NOT NULL,
+            avg_cost NUMERIC NOT NULL,
+            qty NUMERIC NOT NULL,
+            buy_date DATE NOT NULL,
+            sell_date DATE
+        )
+        """)
+        # Bank Accounts
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS bank (
+            id SERIAL PRIMARY KEY,
+            bank_name VARCHAR(255) NOT NULL,
+            account_holder VARCHAR(255) NOT NULL,
+            account_number VARCHAR(50) NOT NULL,
+            account_type VARCHAR(50) NOT NULL,
+            deposit_date DATE NOT NULL,
+            current_balance NUMERIC NOT NULL,
+            future_balance NUMERIC NOT NULL,
+            future_date DATE NOT NULL,
+            interest_rate NUMERIC NOT NULL
         )
         """)
         conn.commit()
         cursor.close()
         conn.close()
 
-    create_portfolio_table()
+    create_tables()
 
+    # ---------- Pydantic Models ----------
     class Stock(BaseModel):
         stock_name: str
         symbol: str
         buy_price: float
         qty: int
-        buy_date: str  # or date
+        buy_date: str
         sell_date: Optional[str] = None
 
+    class Crypto(BaseModel):
+        crypto_name: str
+        symbol: str
+        avg_cost: float
+        qty: float
+        buy_date: str
+        sell_date: Optional[str] = None
+
+    class MutualFund(BaseModel):
+        fund_name: str
+        symbol: str
+        avg_cost: float
+        qty: float
+        buy_date: str
+        sell_date: Optional[str] = None
+
+    class BankAccount(BaseModel):
+        bank_name: str
+        account_holder: str
+        account_number: str
+        account_type: str
+        deposit_date: str
+        current_balance: float
+        future_balance: float
+        future_date: str
+        interest_rate: float
+
+    # ---------- HTML ----------
     @app.get("/", response_class=HTMLResponse)
     def serve_home():
         with open("/code/index.html") as f:
             return f.read()
 
+    # ---------- STOCK APIs ----------
     @app.post("/add_stock")
     def add_stock(stock: Stock):
-        try:
-            conn = get_connection()
-            cursor = conn.cursor()
-            current_value = stock.buy_price * stock.qty
-            cursor.execute(
-                "INSERT INTO portfolio (stock_name, symbol, buy_price, current_value, qty, buy_date, sell_date) VALUES (%s,%s,%s,%s,%s,%s,%s)",
-                (stock.stock_name, stock.symbol, stock.buy_price, current_value, stock.qty, stock.buy_date, stock.sell_date)
-            )
-            conn.commit()
-            return {"status": "added"}
-        except Exception as e:
-            conn.rollback()
-            return {"error": str(e)}
-        finally:
-            cursor.close()
-            conn.close()
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO portfolio (stock_name, symbol, buy_price, qty, buy_date, sell_date) VALUES (%s,%s,%s,%s,%s,%s)",
+            (stock.stock_name, stock.symbol, stock.buy_price, stock.qty, stock.buy_date, stock.sell_date)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"status": "added"}
 
     @app.get("/get_portfolio")
     def get_portfolio():
-        try:
-            conn = get_connection()
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, stock_name, symbol, buy_price, current_value, qty, buy_date, sell_date FROM portfolio")
-            rows = cursor.fetchall()
-            result = []
-            for r in rows:
-                result.append({
-                    "id": r[0],
-                    "stock_name": r[1],
-                    "symbol": r[2],
-                    "buy_price": float(r[3]),
-                    "current_value": float(r[4]),
-                    "qty": r[5],
-                    "buy_date": r[6].isoformat() if r[6] else None,
-                    "sell_date": r[7].isoformat() if r[7] else None
-                })
-            return result
-        finally:
-            cursor.close()
-            conn.close()
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, stock_name, symbol, buy_price, qty, buy_date, sell_date FROM portfolio")
+        rows = cursor.fetchall()
+        result = []
+        for r in rows:
+            result.append({
+                "id": r[0],
+                "stock_name": r[1],
+                "symbol": r[2],
+                "buy_price": float(r[3]),
+                "qty": r[4],
+                "buy_date": r[5].isoformat() if r[5] else None,
+                "sell_date": r[6].isoformat() if r[6] else None
+            })
+        cursor.close()
+        conn.close()
+        return result
 
+    @app.delete("/delete_stock/{id}")
+    def delete_stock(id: int):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM portfolio WHERE id=%s", (id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"status": "deleted"}
+
+    @app.put("/update_stock/{id}")
+    def update_stock(id: int, field: str = Query(...), value: str = Query(...)):
+        conn = get_connection()
+        cursor = conn.cursor()
+        if field not in ["buy_price","qty","sell_date"]:
+            return {"error":"Invalid field"}
+        if field=="sell_date":
+            cursor.execute("UPDATE portfolio SET sell_date=%s WHERE id=%s", (value,id))
+        else:
+            cursor.execute(f"UPDATE portfolio SET {field}=%s WHERE id=%s", (float(value),id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"status":"updated"}
+
+    # ---------- CRYPTO APIs ----------
+    @app.post("/add_crypto")
+    def add_crypto(crypto: Crypto):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO crypto (crypto_name, symbol, avg_cost, qty, buy_date, sell_date) VALUES (%s,%s,%s,%s,%s,%s)",
+            (crypto.crypto_name, crypto.symbol, crypto.avg_cost, crypto.qty, crypto.buy_date, crypto.sell_date)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"status":"added"}
+
+    @app.get("/get_crypto")
+    def get_crypto():
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, crypto_name, symbol, avg_cost, qty, buy_date, sell_date FROM crypto")
+        rows = cursor.fetchall()
+        result = []
+        for r in rows:
+            result.append({
+                "id":r[0],
+                "crypto_name":r[1],
+                "symbol":r[2],
+                "avg_cost":float(r[3]),
+                "qty":float(r[4]),
+                "buy_date":r[5].isoformat() if r[5] else None,
+                "sell_date":r[6].isoformat() if r[6] else None
+            })
+        cursor.close()
+        conn.close()
+        return result
+
+    @app.delete("/delete_crypto/{id}")
+    def delete_crypto(id:int):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM crypto WHERE id=%s", (id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"status":"deleted"}
+
+    @app.put("/update_crypto/{id}")
+    def update_crypto(id:int, field:str=Query(...), value:str=Query(...)):
+        conn = get_connection()
+        cursor = conn.cursor()
+        if field not in ["avg_cost","qty","sell_date"]:
+            return {"error":"Invalid field"}
+        if field=="sell_date":
+            cursor.execute("UPDATE crypto SET sell_date=%s WHERE id=%s",(value,id))
+        else:
+            cursor.execute(f"UPDATE crypto SET {field}=%s WHERE id=%s",(float(value),id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"status":"updated"}
+
+    # ---------- MUTUAL FUND APIs ----------
+    @app.post("/add_mf")
+    def add_mf(mf: MutualFund):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO mf (fund_name, symbol, avg_cost, qty, buy_date, sell_date) VALUES (%s,%s,%s,%s,%s,%s)",
+            (mf.fund_name, mf.symbol, mf.avg_cost, mf.qty, mf.buy_date, mf.sell_date)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"status":"added"}
+
+    @app.get("/get_mf")
+    def get_mf():
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, fund_name, symbol, avg_cost, qty, buy_date, sell_date FROM mf")
+        rows = cursor.fetchall()
+        result=[]
+        for r in rows:
+            result.append({
+                "id":r[0],
+                "fund_name":r[1],
+                "symbol":r[2],
+                "avg_cost":float(r[3]),
+                "qty":float(r[4]),
+                "buy_date":r[5].isoformat() if r[5] else None,
+                "sell_date":r[6].isoformat() if r[6] else None
+            })
+        cursor.close()
+        conn.close()
+        return result
+
+    @app.delete("/delete_mf/{id}")
+    def delete_mf(id:int):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM mf WHERE id=%s",(id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"status":"deleted"}
+
+    @app.put("/update_mf/{id}")
+    def update_mf(id:int, field:str=Query(...), value:str=Query(...)):
+        conn = get_connection()
+        cursor = conn.cursor()
+        if field not in ["avg_cost","qty","sell_date"]:
+            return {"error":"Invalid field"}
+        if field=="sell_date":
+            cursor.execute("UPDATE mf SET sell_date=%s WHERE id=%s",(value,id))
+        else:
+            cursor.execute(f"UPDATE mf SET {field}=%s WHERE id=%s",(float(value),id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"status":"updated"}
+
+    # ---------- BANK APIs ----------
+    @app.post("/add_bank")
+    def add_bank(bank: BankAccount):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """INSERT INTO bank (bank_name, account_holder, account_number, account_type, deposit_date,
+               current_balance, future_balance, future_date, interest_rate)
+               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+            (bank.bank_name, bank.account_holder, bank.account_number, bank.account_type,
+             bank.deposit_date, bank.current_balance, bank.future_balance, bank.future_date, bank.interest_rate)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"status":"added"}
+
+    @app.get("/get_bank")
+    def get_bank():
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, bank_name, account_holder, account_number, account_type, deposit_date, current_balance, future_balance, future_date, interest_rate FROM bank")
+        rows = cursor.fetchall()
+        result=[]
+        for r in rows:
+            result.append({
+                "id":r[0],
+                "bank_name":r[1],
+                "account_holder":r[2],
+                "account_number":r[3],
+                "account_type":r[4],
+                "deposit_date":r[5].isoformat() if r[5] else None,
+                "current_balance":float(r[6]),
+                "future_balance":float(r[7]),
+                "future_date":r[8].isoformat() if r[8] else None,
+                "interest_rate":float(r[9])
+            })
+        cursor.close()
+        conn.close()
+        return result
+
+    @app.delete("/delete_bank/{id}")
+    def delete_bank(id:int):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM bank WHERE id=%s",(id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"status":"deleted"}
+
+    # ---------- PRICE FETCH ----------
     @app.get("/get_price")
-    def get_price(symbol: str):
-        """Fetch latest stock price using yfinance"""
+    def get_price(symbol:str):
         try:
             data = yf.Ticker(symbol)
             history = data.history(period="1d")
             if history.empty:
-                return JSONResponse({"price": 0})
-            latest_price = history['Close'].iloc[-1]
-            return {"price": float(latest_price)}
-        except Exception:
-            return JSONResponse({"price": 0})
-
-    @app.put("/update_stock/{id}")
-    def update_stock(id: int, field: str = Query(...), value: str = Query(...)):
-        if field not in ["buy_price", "qty", "sell_date"]:
-            return {"error": "Invalid field"}
-        try:
-            conn = get_connection()
-            cursor = conn.cursor()
-            if field == "sell_date":
-                try:
-                    datetime.strptime(value, "%Y-%m-%d")
-                except ValueError:
-                    return {"error": "Invalid date format. Use YYYY-MM-DD"}
-                cursor.execute("UPDATE portfolio SET sell_date=%s WHERE id=%s",(value, id))
-            else:
-                cursor.execute(f"UPDATE portfolio SET {field}=%s WHERE id=%s",(float(value), id))
-            conn.commit()
-            return {"status": "updated"}
-        finally:
-            cursor.close()
-            conn.close()
-
-    @app.delete("/delete_stock/{id}")
-    def delete_stock(id: int):
-        try:
-            conn = get_connection()
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM portfolio WHERE id=%s", (id,))
-            conn.commit()
-            return {"status": "deleted"}
-        finally:
-            cursor.close()
-            conn.close()
+                return JSONResponse({"price":0})
+            return {"price":float(history['Close'].iloc[-1])}
+        except:
+            return JSONResponse({"price":0})
