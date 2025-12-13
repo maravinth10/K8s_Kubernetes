@@ -1,1 +1,6 @@
 https://raw.githubusercontent.com/maravinth10/k8s_Kubernetes/main/stock_market_app/index.html
+
+git clone https://github.com/maravinth10/k8s_Kubernetes.git
+
+git pull https://github.com/maravinth10/k8s_Kubernetes.git
+
