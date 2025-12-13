@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Portfolio Tracker</title>
+<title>App</title>
 
 <style>
   body { background:#0b1020; color:white; font-family:Arial; padding:20px; }
@@ -15,101 +15,257 @@
   input, button { padding:8px; border-radius:5px; border:0; }
   button { background:#6366f1; color:white; cursor:pointer; }
   button:hover { opacity:0.9; }
+
+  /* Tabs */
+  .tabs { margin-bottom: 20px; }
+  .tab { padding:10px 20px; margin-right:5px; background:#333; border:none; border-radius:5px; cursor:pointer; }
+  .tab.active { background:#6366f1; }
+
+  .section { display:none; }
+  .section.active { display:block; }
 </style>
 </head>
 
 <body>
 
-<h1>Stocks Portfolio Tracker</h1>
+<h1>Portfolio Tracker</h1>
 
-<h2>Add Stock</h2>
-<form id="addForm">
-  <input id="symbol" placeholder="Symbol (^NSEI)" required>
-  <input id="stockName" placeholder="Stock Name" required>
-  <input id="qty" type="number" placeholder="Qty" required>
-  <input id="avgCost" type="number" step="0.01" placeholder="Avg Cost" required>
-  <input id="buyDate" type="date" placeholder="Buy Date" required>
-  <input id="sellDate" type="date" placeholder="Sell Date">
-  <button type="submit">Add</button>
-</form>
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('stocks')">Stocks</button>
+  <button class="tab" onclick="switchTab('crypto')">Crypto</button>
+  <button class="tab" onclick="switchTab('mf')">Mutual Funds</button>
+  <button class="tab" onclick="switchTab('bank')">Bank Accounts</button>
+</div>
 
-<h2>Holdings</h2>
+<!-- STOCKS SECTION -->
+<div id="stocks" class="section active">
+  <h2>Add Stock</h2>
+  <form id="addStockForm">
+    <input id="stockSymbol" placeholder="Symbol (^NSEI)" required>
+    <input id="stockName" placeholder="Stock Name" required>
+    <input id="stockQty" type="number" placeholder="Qty" required>
+    <input id="stockAvgCost" type="number" step="0.01" placeholder="Avg Cost" required>
+    <input id="stockBuyDate" type="date" required>
+    <input id="stockSellDate" type="date">
+    <button type="submit">Add Stock</button>
+  </form>
 
-<table>
-<thead>
-<tr>
-  <th>Stock Name</th>
-  <th>Symbol</th>
-  <th>Qty</th>
-  <th>Avg Cost</th>
-  <th>Current Price</th>
-  <th>Invested</th>
-  <th>Market Value</th>
-  <th>P/L</th>
-  <th>Buy Date</th>
-  <th>Sell Date</th>
-  <th>Action</th>
-</tr>
-</thead>
-<tbody id="holdingsBody"></tbody>
+  <h2>Stock Holdings</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Stock Name</th>
+        <th>Symbol</th>
+        <th>Qty</th>
+        <th>Avg Cost</th>
+        <th>Current Price</th>
+        <th>Invested</th>
+        <th>Market Value</th>
+        <th>P/L</th>
+        <th>Buy Date</th>
+        <th>Sell Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="stocksBody"></tbody>
+    <tbody>
+      <tr class="totals-row">
+        <td>Total</td>
+        <td></td>
+        <td id="sTotalQty"></td>
+        <td id="sTotalAvgCost"></td>
+        <td id="sTotalCurrentPrice"></td>
+        <td id="sTotalInvested"></td>
+        <td id="sTotalMarket"></td>
+        <td id="sTotalPL"></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-<!-- TOTALS ROW -->
-<tbody>
-<tr class="totals-row">
-  <td>Total</td>
-  <td id="tsymbol"></td>
-  <td id="tQty"></td>
-  <td id="tAvgCost"></td>
-  <td id="tAvgCurrentPrice"></td>
-  <td id="tInvested"></td>
-  <td id="tMarket"></td>
-  <td id="tPL"></td>
-  <td></td>
-</tr>
-</tbody>
-</table>
+<!-- CRYPTO SECTION -->
+<div id="crypto" class="section">
+  <h2>Add Crypto</h2>
+  <form id="addCryptoForm">
+    <input id="cryptoSymbol" placeholder="Symbol (BTC-USD)" required>
+    <input id="cryptoName" placeholder="Crypto Name" required>
+    <input id="cryptoQty" type="number" placeholder="Qty" required>
+    <input id="cryptoAvgCost" type="number" step="0.01" placeholder="Avg Cost" required>
+    <input id="cryptoBuyDate" type="date" required>
+    <input id="cryptoSellDate" type="date">
+    <button type="submit">Add Crypto</button>
+  </form>
 
+  <h2>Crypto Holdings</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Crypto Name</th>
+        <th>Symbol</th>
+        <th>Qty</th>
+        <th>Avg Cost</th>
+        <th>Current Price</th>
+        <th>Invested</th>
+        <th>Market Value</th>
+        <th>P/L</th>
+        <th>Buy Date</th>
+        <th>Sell Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="cryptoBody"></tbody>
+    <tbody>
+      <tr class="totals-row">
+        <td>Total</td>
+        <td></td>
+        <td id="cTotalQty"></td>
+        <td id="cTotalAvgCost"></td>
+        <td id="cTotalCurrentPrice"></td>
+        <td id="cTotalInvested"></td>
+        <td id="cTotalMarket"></td>
+        <td id="cTotalPL"></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- MUTUAL FUNDS SECTION -->
+<div id="mf" class="section">
+  <h2>Add Mutual Fund</h2>
+  <form id="addMFForm">
+    <input id="mfName" placeholder="Fund Name" required>
+    <input id="mfSymbol" placeholder="Symbol" required>
+    <input id="mfQty" type="number" placeholder="Units" required>
+    <input id="mfAvgCost" type="number" step="0.01" placeholder="NAV" required>
+    <input id="mfBuyDate" type="date" required>
+    <input id="mfSellDate" type="date">
+    <button type="submit">Add Mutual Fund</button>
+  </form>
+
+  <h2>Mutual Fund Holdings</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Fund Name</th>
+        <th>Symbol</th>
+        <th>Units</th>
+        <th>NAV</th>
+        <th>Current NAV</th>
+        <th>Invested</th>
+        <th>Market Value</th>
+        <th>P/L</th>
+        <th>Buy Date</th>
+        <th>Sell Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="mfBody"></tbody>
+    <tbody>
+      <tr class="totals-row">
+        <td>Total</td>
+        <td></td>
+        <td id="mfTotalUnits"></td>
+        <td id="mfTotalNAV"></td>
+        <td id="mfTotalCurrentNAV"></td>
+        <td id="mfTotalInvested"></td>
+        <td id="mfTotalMarket"></td>
+        <td id="mfTotalPL"></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- BANK ACCOUNTS SECTION -->
+<div id="bank" class="section">
+  <h2>Add Bank Account</h2>
+  <form id="addBankForm">
+    <input id="bankName" placeholder="Bank Name" required>
+    <input id="accountHolder" placeholder="Name" required>
+    <input id="accountNumber" placeholder="Account Number" required>
+    <input id="accountType" placeholder="Account Type" required>
+    <input id="depositDate" type="date" placeholder="Deposit Date" required>
+    <input id="currentBalance" type="number" step="0.01" placeholder="Current Balance" required>
+    <input id="futureBalance" type="number" step="0.01" placeholder="Future Balance" required>
+    <input id="futureDate" type="date" placeholder="Future Date" required>
+    <input id="interestRate" type="number" step="0.01" placeholder="Interest Rate (%)" required>
+    <button type="submit">Add Bank Account</button>
+  </form>
+
+  <h2>Bank Accounts</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Bank Name</th>
+        <th>Name</th>
+        <th>Account Number</th>
+        <th>Account Type</th>
+        <th>Deposit Date</th>
+        <th>Current Balance</th>
+        <th>Future Balance</th>
+        <th>Future Date</th>
+        <th>Interest Rate</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="bankBody"></tbody>
+    <tbody>
+      <tr class="totals-row">
+        <td colspan="5">Total</td>
+        <td id="bTotalCurrent"></td>
+        <td id="bTotalFuture"></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 <script>
 const API = window.location.origin;
 
+// Tabs
+function switchTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
 // INR formatter
-function fmtINR(n){
-  return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(n);
-}
+function fmtINR(n){ return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(n); }
 
-async function getCurrentPrice(symbol){
-  const url = `${API}/get_price?symbol=${symbol}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  return data.price || 0;
-}
-
-async function loadHoldings(){
+// ---------- STOCKS ----------
+async function loadStocks(){
   const res = await fetch(`${API}/get_portfolio`);
   const holdings = await res.json();
-
-  const tbody = document.getElementById("holdingsBody");
+  const tbody = document.getElementById("stocksBody");
   tbody.innerHTML = "";
 
-  let totalQty = 0;
-  let totalInvested = 0;
-  let totalMarket = 0;
-  let totalCostSum = 0;
+  let totalQty=0, totalInvested=0, totalMarket=0, totalCostSum=0;
 
   for(const h of holdings){
-    const currentPrice = await getCurrentPrice(h.symbol);
-    const invested = h.buy_price * h.qty;
-    const marketVal = currentPrice * h.qty;
-    const pl = marketVal - invested;
+    const priceRes = await fetch(`${API}/get_price?symbol=${h.symbol}`);
+    const priceData = await priceRes.json();
+    const currentPrice = priceData.price || 0;
 
-    totalQty += h.qty;
-    totalInvested += invested;
-    totalMarket += marketVal;
-    totalCostSum += h.buy_price * h.qty;
+    const invested = h.buy_price*h.qty;
+    const marketVal = currentPrice*h.qty;
+    const pl = marketVal-invested;
+
+    totalQty+=h.qty; totalInvested+=invested; totalMarket+=marketVal; totalCostSum+=h.buy_price*h.qty;
 
     const tr = document.createElement("tr");
-    tr.innerHTML = `
+    tr.innerHTML=`
       <td>${h.stock_name}</td>
       <td>${h.symbol}</td>
       <td>${h.qty}</td>
@@ -118,73 +274,252 @@ async function loadHoldings(){
       <td>${fmtINR(invested)}</td>
       <td>${fmtINR(marketVal)}</td>
       <td class="${pl>=0?'profit':'loss'}">${fmtINR(pl)}</td>
-      <td>${h.buy_date || ''}</td>
-      <td><input type="date" id="sellDate-${h.id}" value="${h.sell_date || ''}"></td>
+      <td>${h.buy_date||''}</td>
+      <td><input type="date" id="sellDate-${h.id}" value="${h.sell_date||''}"></td>
       <td>
-	  <button onclick="delStock(${h.id})">Delete</button>
-	  <button onclick="updateSellDate(${h.id})">Update</button>
-	  </td>
-    `;
+        <button onclick="delStock(${h.id})">Delete</button>
+        <button onclick="updateSellDate(${h.id})">Update</button>
+      </td>`;
     tbody.appendChild(tr);
   }
 
-  // Totals
-  const avgCost = totalQty ? totalCostSum / totalQty : 0;
-  const avgCurrentPrice = totalQty ? totalMarket / totalQty : 0;
-  const totalPL = totalMarket - totalInvested;
+  const avgCost = totalQty?totalCostSum/totalQty:0;
+  const avgCurrent = totalQty?totalMarket/totalQty:0;
+  const totalPL = totalMarket-totalInvested;
 
-  document.getElementById("tQty").innerText = totalQty;
-  document.getElementById("tInvested").innerText = fmtINR(totalInvested);
-  document.getElementById("tMarket").innerText = fmtINR(totalMarket);
-  document.getElementById("tPL").innerHTML =
-    `<span class="${totalPL>=0?'profit':'loss'}">${fmtINR(totalPL)}</span>`;
-  document.getElementById("tAvgCost").innerText = fmtINR(avgCost);
-  document.getElementById("tAvgCurrentPrice").innerText = fmtINR(avgCurrentPrice);
+  document.getElementById("sTotalQty").innerText=totalQty;
+  document.getElementById("sTotalInvested").innerText=fmtINR(totalInvested);
+  document.getElementById("sTotalMarket").innerText=fmtINR(totalMarket);
+  document.getElementById("sTotalPL").innerHTML=`<span class="${totalPL>=0?'profit':'loss'}">${fmtINR(totalPL)}</span>`;
+  document.getElementById("sTotalAvgCost").innerText=fmtINR(avgCost);
+  document.getElementById("sTotalCurrentPrice").innerText=fmtINR(avgCurrent);
 }
 
-// Delete
-async function delStock(id){
-  await fetch(`${API}/delete_stock/${id}`, {method:"DELETE"});
-  loadHoldings();
-}
-
-// update sell date
+async function delStock(id){ await fetch(`${API}/delete_stock/${id}`,{method:"DELETE"}); loadStocks(); }
 async function updateSellDate(id){
-  const dateInput = document.getElementById(`sellDate-${id}`);
-  const value = dateInput.value;
-  
-  if(!value){
-    alert("Please select a date");
-    return;
-  }
-  
-  await fetch(`${API}/update_stock/${id}?field=sell_date&value=${value}`, {method: "PUT"});
-  
-  loadHoldings();
+  const val=document.getElementById(`sellDate-${id}`).value;
+  if(!val){ alert("Select date"); return; }
+  await fetch(`${API}/update_stock/${id}?field=sell_date&value=${val}`,{method:"PUT"});
+  loadStocks();
 }
 
-
-// Add
-document.getElementById("addForm").onsubmit = async (e)=>{
+document.getElementById("addStockForm").onsubmit=async e=>{
   e.preventDefault();
-  const body = {
-    stock_name: stockName.value,
-    symbol: symbol.value,
-    buy_price: parseFloat(avgCost.value),
-    qty: parseInt(qty.value),
-    buy_date: buyDate.value,
-    sell_date: sellDate.value || null
+  const body={
+    stock_name:document.getElementById("stockName").value,
+    symbol:document.getElementById("stockSymbol").value,
+    buy_price:parseFloat(document.getElementById("stockAvgCost").value),
+    qty:parseInt(document.getElementById("stockQty").value),
+    buy_date:document.getElementById("stockBuyDate").value,
+    sell_date:document.getElementById("stockSellDate").value||null
   };
-  await fetch(`${API}/add_stock`, {
+  await fetch(`${API}/add_stock`,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify(body)
   });
   e.target.reset();
-  loadHoldings();
+  loadStocks();
 };
 
-loadHoldings();
+// ---------- CRYPTO ----------
+async function loadCrypto(){
+  const res=await fetch(`${API}/get_crypto`);
+  const holdings=await res.json();
+  const tbody=document.getElementById('cryptoBody'); tbody.innerHTML='';
+
+  let totalQty=0,totalInvested=0,totalMarket=0,totalCostSum=0;
+
+  for(const h of holdings){
+    const priceRes=await fetch(`${API}/get_price?symbol=${h.symbol}`);
+    const priceData=await priceRes.json();
+    const currentPrice=priceData.price||0;
+
+    const invested=h.avg_cost*h.qty;
+    const marketVal=currentPrice*h.qty;
+    const pl=marketVal-invested;
+
+    totalQty+=h.qty; totalInvested+=invested; totalMarket+=marketVal; totalCostSum+=h.avg_cost*h.qty;
+
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${h.crypto_name}</td>
+      <td>${h.symbol}</td>
+      <td>${h.qty}</td>
+      <td>${fmtINR(h.avg_cost)}</td>
+      <td>${fmtINR(currentPrice)}</td>
+      <td>${fmtINR(invested)}</td>
+      <td>${fmtINR(marketVal)}</td>
+      <td class="${pl>=0?'profit':'loss'}">${fmtINR(pl)}</td>
+      <td>${h.buy_date||''}</td>
+      <td><input type="date" id="cryptoSell-${h.id}" value="${h.sell_date||''}"></td>
+      <td>
+        <button onclick="delCrypto(${h.id})">Delete</button>
+        <button onclick="updateCryptoSell(${h.id})">Update</button>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+
+  const avgCost=totalQty?totalCostSum/totalQty:0;
+  const avgCurrent=totalQty?totalMarket/totalQty:0;
+  const totalPL=totalMarket-totalInvested;
+
+  document.getElementById("cTotalQty").innerText=totalQty;
+  document.getElementById("cTotalInvested").innerText=fmtINR(totalInvested);
+  document.getElementById("cTotalMarket").innerText=fmtINR(totalMarket);
+  document.getElementById("cTotalPL").innerHTML=`<span class="${totalPL>=0?'profit':'loss'}">${fmtINR(totalPL)}</span>`;
+  document.getElementById("cTotalAvgCost").innerText=fmtINR(avgCost);
+  document.getElementById("cTotalCurrentPrice").innerText=fmtINR(avgCurrent);
+}
+
+// Add/update/delete for crypto
+async function delCrypto(id){ await fetch(`${API}/delete_crypto/${id}`,{method:"DELETE"}); loadCrypto(); }
+async function updateCryptoSell(id){
+  const val=document.getElementById(`cryptoSell-${id}`).value;
+  if(!val){ alert("Select date"); return; }
+  await fetch(`${API}/update_crypto/${id}?field=sell_date&value=${val}`,{method:"PUT"});
+  loadCrypto();
+}
+
+document.getElementById('addCryptoForm').onsubmit=async e=>{
+  e.preventDefault();
+  const body={
+    crypto_name:document.getElementById('cryptoName').value,
+    symbol:document.getElementById('cryptoSymbol').value,
+    qty:parseFloat(document.getElementById('cryptoQty').value),
+    avg_cost:parseFloat(document.getElementById('cryptoAvgCost').value),
+    buy_date:document.getElementById('cryptoBuyDate').value,
+    sell_date:document.getElementById('cryptoSellDate').value||null
+  };
+  await fetch(`${API}/add_crypto`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  e.target.reset(); loadCrypto();
+};
+
+// ---------- MUTUAL FUNDS ----------
+async function loadMF(){
+  const res=await fetch(`${API}/get_mf`);
+  const holdings=await res.json();
+  const tbody=document.getElementById('mfBody'); tbody.innerHTML='';
+
+  let totalUnits=0,totalInvested=0,totalMarket=0,totalCostSum=0;
+
+  for(const h of holdings){
+    const priceRes=await fetch(`${API}/get_price?symbol=${h.symbol}`);
+    const priceData=await priceRes.json();
+    const currentNAV=priceData.price||0;
+
+    const invested=h.avg_cost*h.qty;
+    const marketVal=currentNAV*h.qty;
+    const pl=marketVal-invested;
+
+    totalUnits+=h.qty; totalInvested+=invested; totalMarket+=marketVal; totalCostSum+=h.avg_cost*h.qty;
+
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${h.fund_name}</td>
+      <td>${h.symbol}</td>
+      <td>${h.qty}</td>
+      <td>${fmtINR(h.avg_cost)}</td>
+      <td>${fmtINR(currentNAV)}</td>
+      <td>${fmtINR(invested)}</td>
+      <td>${fmtINR(marketVal)}</td>
+      <td class="${pl>=0?'profit':'loss'}">${fmtINR(pl)}</td>
+      <td>${h.buy_date||''}</td>
+      <td><input type="date" id="mfSell-${h.id}" value="${h.sell_date||''}"></td>
+      <td>
+        <button onclick="delMF(${h.id})">Delete</button>
+        <button onclick="updateMFSell(${h.id})">Update</button>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+
+  const avgCost=totalUnits?totalCostSum/totalUnits:0;
+  const avgCurrent=totalUnits?totalMarket/totalUnits:0;
+  const totalPL=totalMarket-totalInvested;
+
+  document.getElementById("mfTotalUnits").innerText=totalUnits;
+  document.getElementById("mfTotalInvested").innerText=fmtINR(totalInvested);
+  document.getElementById("mfTotalMarket").innerText=fmtINR(totalMarket);
+  document.getElementById("mfTotalPL").innerHTML=`<span class="${totalPL>=0?'profit':'loss'}">${fmtINR(totalPL)}</span>`;
+  document.getElementById("mfTotalNAV").innerText=fmtINR(avgCost);
+  document.getElementById("mfTotalCurrentNAV").innerText=fmtINR(avgCurrent);
+}
+
+async function delMF(id){ await fetch(`${API}/delete_mf/${id}`,{method:"DELETE"}); loadMF(); }
+async function updateMFSell(id){
+  const val=document.getElementById(`mfSell-${id}`).value;
+  if(!val){ alert("Select date"); return; }
+  await fetch(`${API}/update_mf/${id}?field=sell_date&value=${val}`,{method:"PUT"});
+  loadMF();
+}
+
+document.getElementById('addMFForm').onsubmit=async e=>{
+  e.preventDefault();
+  const body={
+    fund_name:document.getElementById('mfName').value,
+    symbol:document.getElementById('mfSymbol').value,
+    qty:parseFloat(document.getElementById('mfQty').value),
+    avg_cost:parseFloat(document.getElementById('mfAvgCost').value),
+    buy_date:document.getElementById('mfBuyDate').value,
+    sell_date:document.getElementById('mfSellDate').value||null
+  };
+  await fetch(`${API}/add_mf`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  e.target.reset(); loadMF();
+};
+
+// ---------- BANK ----------
+async function loadBank(){
+  const res=await fetch(`${API}/get_bank`);
+  const accounts=await res.json();
+  const tbody=document.getElementById('bankBody'); tbody.innerHTML='';
+
+  let totalCurrent=0,totalFuture=0;
+
+  for(const a of accounts){
+    totalCurrent+=a.current_balance;
+    totalFuture+=a.future_balance;
+
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${a.bank_name}</td>
+      <td>${a.account_holder}</td>
+      <td>${a.account_number}</td>
+      <td>${a.account_type}</td>
+      <td>${a.deposit_date}</td>
+      <td>${fmtINR(a.current_balance)}</td>
+      <td>${fmtINR(a.future_balance)}</td>
+      <td>${a.future_date}</td>
+      <td>${a.interest_rate}%</td>
+      <td>
+        <button onclick="delBank(${a.id})">Delete</button>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById('bTotalCurrent').innerText=fmtINR(totalCurrent);
+  document.getElementById('bTotalFuture').innerText=fmtINR(totalFuture);
+}
+
+async function delBank(id){ await fetch(`${API}/delete_bank/${id}`,{method:"DELETE"}); loadBank(); }
+document.getElementById('addBankForm').onsubmit=async e=>{
+  e.preventDefault();
+  const body={
+    bank_name:document.getElementById('bankName').value,
+    account_holder:document.getElementById('accountHolder').value,
+    account_number:document.getElementById('accountNumber').value,
+    account_type:document.getElementById('accountType').value,
+    deposit_date:document.getElementById('depositDate').value,
+    current_balance:parseFloat(document.getElementById('currentBalance').value),
+    future_balance:parseFloat(document.getElementById('futureBalance').value),
+    future_date:document.getElementById('futureDate').value,
+    interest_rate:parseFloat(document.getElementById('interestRate').value)
+  };
+  await fetch(`${API}/add_bank`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  e.target.reset(); loadBank();
+};
+
+// Initial load
+loadStocks(); loadCrypto(); loadMF(); loadBank();
 </script>
 
 </body>
