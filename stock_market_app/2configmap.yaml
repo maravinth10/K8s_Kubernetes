@@ -368,9 +368,9 @@ data:
                 "account_type":r[4],
                 "deposit_date":r[5].isoformat() if r[5] else None,
                 "current_balance":float(r[6]),
-                "future_balance":float(r[7]),
+                "future_balance": float(r[7]) if r[7] is not None else None,
                 "future_date":r[8].isoformat() if r[8] else None,
-                "interest_rate":float(r[9])
+                "interest_rate": float(r[9]) if r[9] is not None else None)
             })
         cursor.close()
         conn.close()
