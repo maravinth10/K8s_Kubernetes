@@ -370,7 +370,7 @@ data:
                 "current_balance":float(r[6]),
                 "future_balance": float(r[7]) if r[7] is not None else None,
                 "future_date":r[8].isoformat() if r[8] else None,
-                "interest_rate": float(r[9]) if r[9] is not None else None)
+                "interest_rate": float(r[9]) if r[9] is not None else None
             })
         cursor.close()
         conn.close()
