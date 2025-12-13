@@ -24,8 +24,8 @@ data:
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import HTMLResponse, JSONResponse
     from typing import Optional
-	from fastapi import Query
-	from datetime import datetime
+    from fastapi import Query
+    from datetime import datetime
     
     app = FastAPI()
 
@@ -150,14 +150,14 @@ data:
         try:
             conn = get_connection()
             cursor = conn.cursor()
-			if field == "sell_date":
-				try:
-					datetime.strptime(value, "%Y-%m-%d")
-				except ValueError:
-					return {"error": "Invalid date format. Use YYYY-MM-DD"}
-				cursor.execute("UPDATE portfolio SET sell_date=%s WHERE id=%s",(value, id))
-			else:
-				cursor.execute(f"UPDATE portfolio SET {field}=%s WHERE id=%s",(float(value), id))
+            if field == "sell_date":
+                try:
+                    datetime.strptime(value, "%Y-%m-%d")
+                except ValueError:
+                    return {"error": "Invalid date format. Use YYYY-MM-DD"}
+                cursor.execute("UPDATE portfolio SET sell_date=%s WHERE id=%s",(value, id))
+            else:
+                cursor.execute(f"UPDATE portfolio SET {field}=%s WHERE id=%s",(float(value), id))
             conn.commit()
             return {"status": "updated"}
         finally:
